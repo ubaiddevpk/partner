@@ -1,17 +1,32 @@
 import React, { useState, useEffect, useRef } from "react";
 
-const Button = ({ children, variant = "primary", size = "sm", className = "", ...props }) => {
+// Add this function right after your imports, before the Button component
+const navigate = (path) => {
+  window.history.pushState({}, "", path);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};
+
+const Button = ({
+  children,
+  variant = "primary",
+  size = "sm",
+  className = "",
+  ...props
+}) => {
   const baseStyles = "rounded-lg font-medium transition-colors";
   const sizes = {
-    sm: "px-4 py-2 text-sm"
+    sm: "px-4 py-2 text-sm",
   };
   const variants = {
     primary: "bg-primary-600 text-white hover:bg-primary-700",
-    ghost: "text-neutral-700 hover:bg-neutral-100"
+    ghost: "text-neutral-700 hover:bg-neutral-100",
   };
-  
+
   return (
-    <button className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${className}`} {...props}>
+    <button
+      className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${className}`}
+      {...props}
+    >
       {children}
     </button>
   );
@@ -48,10 +63,18 @@ const Header = () => {
       href: "/who-we-serve",
       hasDropdown: true,
       dropdownItems: [
-        { name: "General Contractors", href: "/general-contractors", icon: "👷" },
+        {
+          name: "General Contractors",
+          href: "/general-contractors",
+          icon: "👷",
+        },
         { name: "Remodelers", href: "/remodelers", icon: "🏠" },
         { name: "Home Builders", href: "/home-builders", icon: "🏗️" },
-        { name: "Specialty Contractors", href: "/specialty-contractors", icon: "⚡" },
+        {
+          name: "Specialty Contractors",
+          href: "/specialty-contractors",
+          icon: "⚡",
+        },
       ],
     },
     {
@@ -59,18 +82,66 @@ const Header = () => {
       href: "/features",
       hasDropdown: true,
       dropdownItems: [
-        { name: "Instant AI Estimates", href: "/features/ai-estimates", description: "Generate detailed estimates in seconds" },
-        { name: "Invoicing", href: "/features/invoicing", description: "Turn proposals into invoices quickly" },
-        { name: "Project Management", href: "/features/project-management", description: "Keep all project data in one place" },
-        { name: "Client Management System", href: "/features/client-management", description: "Store client info and estimates" },
-        { name: "Change Orders", href: "/features/change-orders", description: "Manage scope changes with AI" },
-        { name: "AI Agent", href: "/features/ai-agent", description: "Personal AI assistant for your business" },
-        { name: "Winning AI Proposals", href: "/features/proposals", description: "Generate winning proposals automatically" },
-        { name: "File Management", href: "/features/file-management", description: "Organize drawings and photos" },
-        { name: "Homeowner Financing", href: "/features/financing", description: "Offer financing on every proposal" },
-        { name: "Creating Estimates from files", href: "/features/estimate-from-files", description: "From drawings, photos and more" },
-        { name: "AI Documents", href: "/features/ai-documents", description: "Upload files for instant AI estimates" },
-        { name: "AI Transcription", href: "/features/transcription", description: "Record and transcribe meetings" },
+        {
+          name: "Instant AI Estimates",
+          href: "/features/ai-estimates",
+          description: "Generate detailed estimates in seconds",
+        },
+        {
+          name: "Invoicing",
+          href: "/features/invoicing",
+          description: "Turn proposals into invoices quickly",
+        },
+        {
+          name: "Project Management",
+          href: "/features/project-management",
+          description: "Keep all project data in one place",
+        },
+        {
+          name: "Client Management System",
+          href: "/features/client-management",
+          description: "Store client info and estimates",
+        },
+        {
+          name: "Change Orders",
+          href: "/features/change-orders",
+          description: "Manage scope changes with AI",
+        },
+        {
+          name: "AI Agent",
+          href: "/features/ai-agent",
+          description: "Personal AI assistant for your business",
+        },
+        {
+          name: "Winning AI Proposals",
+          href: "/features/proposals",
+          description: "Generate winning proposals automatically",
+        },
+        {
+          name: "File Management",
+          href: "/features/file-management",
+          description: "Organize drawings and photos",
+        },
+        {
+          name: "Homeowner Financing",
+          href: "/features/financing",
+          description: "Offer financing on every proposal",
+        },
+        {
+          name: "Creating Estimates from files",
+          href: "/features/estimate-from-files",
+          description: "From drawings, photos and more",
+        },
+        {
+          name: "AI Documents",
+          href: "/features/ai-documents",
+          description: "Upload files for instant AI estimates",
+        },
+        {
+          name: "AI Transcription",
+          href: "/features/transcription",
+          description: "Record and transcribe meetings",
+        },
       ],
     },
     { name: "Pricing", href: "/pricing" },
@@ -98,13 +169,13 @@ const Header = () => {
   return (
     <>
       <header
-        className={`fixed top-2 left-0 right-0 z-50 transition-all rounded-[50px] duration-300 ${
+        className={`fixed top-2 left-0 right-0 z-50 transition-all rounded-[20px] lg:rounded-[50px] duration-300 ${
           isScrolled
             ? "bg-white/95 backdrop-blur-md shadow-medium py-3"
             : "bg-transparent py-5"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-2">
@@ -115,11 +186,16 @@ const Header = () => {
                   className="w-10 h-10 object-contain"
                 />
               </div>
-              <span className="text-2xl font-bold text-primary-500">Partner</span>
+              <span className="text-2xl font-bold text-primary-500">
+                Partner
+              </span>
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1" ref={dropdownRef}>
+            <nav
+              className="hidden lg:flex items-center gap-1"
+              ref={dropdownRef}
+            >
               {navigation.map((item) => (
                 <div key={item.name} className="relative">
                   {item.hasDropdown ? (
@@ -160,7 +236,13 @@ const Header = () => {
                       className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-large border border-neutral-200 py-2 min-w-[320px] animate-fade-in-up"
                       onMouseLeave={() => setActiveDropdown(null)}
                     >
-                      <div className={item.name === "Features" ? "grid grid-cols-3 gap-1 p-2" : "p-2"}>
+                      <div
+                        className={
+                          item.name === "Features"
+                            ? "grid grid-cols-3 gap-1 p-2"
+                            : "p-2"
+                        }
+                      >
                         {item.dropdownItems.map((dropdownItem) => (
                           <a
                             key={dropdownItem.name}
@@ -168,7 +250,9 @@ const Header = () => {
                             className="flex items-start gap-3 px-4 py-3 rounded-xl hover:bg-primary-50 transition-colors group"
                           >
                             {dropdownItem.icon && (
-                              <span className="text-2xl">{dropdownItem.icon}</span>
+                              <span className="text-2xl">
+                                {dropdownItem.icon}
+                              </span>
                             )}
                             <div className="flex-1">
                               <div className="font-bold text-neutral-900 group-hover:text-primary-600 transition-colors">
@@ -191,10 +275,17 @@ const Header = () => {
 
             {/* CTA Buttons */}
             <div className="hidden lg:flex items-center gap-4">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm"
+              onClick={() => navigate("/login")}>
                 Login
               </Button>
-              <Button variant="primary" size="sm">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate("/signup")
+
+                }
+              >
                 Start an estimate
               </Button>
             </div>
@@ -293,7 +384,12 @@ const Header = () => {
               <Button variant="ghost" size="sm" className="w-full">
                 Login
               </Button>
-              <Button variant="primary" size="sm" className="w-full">
+              <Button
+                variant="primary"
+                size="sm"
+                className="w-full"
+                onClick={() => navigate("/signup")}
+              >
                 Start an estimate
               </Button>
             </div>
