@@ -5,11 +5,31 @@ const PartnerSignupPage = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [acceptSMS, setAcceptSMS] = useState(false);
   const [acceptMarketing, setAcceptMarketing] = useState(false);
+  const [email, setEmail] = useState('');
+const [name, setName] = useState('');
 
-  const handleSubmit = () => {
-    console.log('Signup submitted:', { phoneNumber, acceptSMS, acceptMarketing });
-    // Add your signup logic here
+// Update handleSubmit function
+const handleSubmit = () => {
+  console.log('Signup submitted:', { name, email, phoneNumber, acceptSMS, acceptMarketing });
+  
+  // Validate required fields
+  if (!name || !email || !phoneNumber) {
+    alert('Please fill in all required fields');
+    return;
+  }
+  
+  // Store user data
+  const userData = {
+    name: name,
+    email: email,
+    phone: phoneNumber
   };
+  localStorage.setItem('user', JSON.stringify(userData));
+  
+  // Redirect to onboarding
+  window.history.pushState({}, '', '/onboarding');
+  window.dispatchEvent(new PopStateEvent('popstate'));
+};
 
   const handleGoogleSignup = () => {
     console.log('Google signup clicked');
@@ -70,6 +90,44 @@ const PartnerSignupPage = () => {
                 {/* Form */}
                 <div className="space-y-6">
                   {/* Phone Input */}
+                  <div>
+  <label htmlFor="name" className="block text-sm font-semibold text-neutral-700 mb-2">
+    Full Name <span className="text-error">*</span>
+  </label>
+  <div className="relative">
+    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+      <User className="h-5 w-5 text-neutral-400" />
+    </div>
+    <input
+      type="text"
+      id="name"
+      value={name}
+      onChange={(e) => setName(e.target.value)}
+      placeholder="John Doe"
+      className="w-full pl-12 pr-4 py-4 border-2 border-neutral-200 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all outline-none text-neutral-900 placeholder-neutral-400"
+    />
+  </div>
+</div>
+
+{/* Email Input */}
+<div>
+  <label htmlFor="email" className="block text-sm font-semibold text-neutral-700 mb-2">
+    Email Address <span className="text-error">*</span>
+  </label>
+  <div className="relative">
+    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+      <Mail className="h-5 w-5 text-neutral-400" />
+    </div>
+    <input
+      type="email"
+      id="email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      placeholder="john@example.com"
+      className="w-full pl-12 pr-4 py-4 border-2 border-neutral-200 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all outline-none text-neutral-900 placeholder-neutral-400"
+    />
+  </div>
+</div>
                   <div>
                     <label htmlFor="phone" className="block text-sm font-semibold text-neutral-700 mb-2">
                       Phone Number <span className="text-error">*</span>

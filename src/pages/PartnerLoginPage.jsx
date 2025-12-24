@@ -6,9 +6,26 @@ const PartnerLoginPage = () => {
   const [email, setEmail] = useState('');
 
   const handleContinue = () => {
-    console.log('Login with:', loginMethod, email);
-    // Add your login logic here
-  };
+  console.log('Login with:', loginMethod, email);
+  
+  // Simulate login - check if user exists
+  const storedUser = localStorage.getItem('user');
+  const onboardingComplete = localStorage.getItem('onboardingComplete');
+  
+  if (storedUser && onboardingComplete === 'true') {
+    // User exists and completed onboarding - go to dashboard
+    window.history.pushState({}, '', '/dashboard');
+  } else if (storedUser) {
+    // User exists but didn't complete onboarding
+    window.history.pushState({}, '', '/onboarding');
+  } else {
+    // New user - need to sign up
+    alert('Account not found. Please sign up first.');
+    window.history.pushState({}, '', '/signup');
+  }
+  
+  window.dispatchEvent(new PopStateEvent('popstate'));
+};
 
   const handleGoogleLogin = () => {
     console.log('Google login clicked');
