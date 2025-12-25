@@ -5,27 +5,44 @@ import PartnerLoginPage from "./pages/PartnerLoginPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import Layout from "./components/layout/Layout";
 import DashboardPage from "./pages/Dashboardpage";
-import AIChatbotPage from "./pages/AIChatbotPage";
+import ClientsPage from "./pages/ClientsPage";
+import ProjectsPage from "./pages/Projectspage";
+import ProjectDetailsPage from "./pages/ProjectDetailsPage";
+import ClientDetailsPage from "./pages/ClientDetailsPage";
+// Add these imports at the top
+import InvoicesPage from "./pages/InvoicesPage";
+import CreateInvoicePage from "./pages/CreateInvoicePage";
+import InvoiceDetailsPage from "./pages/InvoiceDetailsPage";
+import SettingsPage from "./pages/SettingsPage";
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showClientDetails, setShowClientDetails] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
+
+  // Add these states for project navigation
+  const [showProjectDetails, setShowProjectDetails] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [showCreateInvoice, setShowCreateInvoice] = useState(false);
+  const [showInvoiceDetails, setShowInvoiceDetails] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   useEffect(() => {
     const checkAuth = () => {
-      const businessName = localStorage.getItem('businessName');
-      const onboardingComplete = localStorage.getItem('onboardingComplete');
-      const userData = localStorage.getItem('user');
+      const businessName = localStorage.getItem("businessName");
+      const onboardingComplete = localStorage.getItem("onboardingComplete");
+      const userData = localStorage.getItem("user");
 
-      if (businessName && onboardingComplete === 'true') {
+      if (businessName && onboardingComplete === "true") {
         setUser({
-          name: userData ? JSON.parse(userData).name : 'User',
+          name: userData ? JSON.parse(userData).name : "User",
           businessName: businessName,
-          email: userData ? JSON.parse(userData).email : 'user@example.com'
+          email: userData ? JSON.parse(userData).email : "user@example.com",
         });
       }
-      
+
       setIsLoading(false);
     };
 
@@ -35,20 +52,46 @@ export default function App() {
   useEffect(() => {
     const handleLocationChange = () => {
       setCurrentPath(window.location.pathname);
+
+      if (window.location.pathname !== "/projects") {
+        setShowProjectDetails(false);
+        setSelectedProject(null);
+      }
     };
 
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
+    window.addEventListener("popstate", handleLocationChange);
+    return () => window.removeEventListener("popstate", handleLocationChange);
+  }, []);
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+
+      if (window.location.pathname !== "/projects") {
+        setShowProjectDetails(false);
+        setSelectedProject(null);
+      }
+
+      // Add this block for invoices
+      if (window.location.pathname !== "/invoices") {
+        setShowCreateInvoice(false);
+        setShowInvoiceDetails(false);
+        setSelectedInvoice(null);
+      }
+    };
+
+    window.addEventListener("popstate", handleLocationChange);
+    return () => window.removeEventListener("popstate", handleLocationChange);
   }, []);
 
   const handleOnboardingComplete = (businessName) => {
     const userData = {
-      name: 'User',
+      name: "User",
       businessName: businessName,
-      email: 'user@example.com'
+      email: "user@example.com",
     };
-    
-    localStorage.setItem('user', JSON.stringify(userData));
+
+    localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   };
 
@@ -56,8 +99,12 @@ export default function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-large mb-4 animate-pulse mx-auto">
-            <span className="text-white font-bold text-2xl">P</span>
+          <div className="w-16 h-16  rounded-2xl flex items-center justify-center shadow-large mb-4 animate-pulse mx-auto">
+             <img
+            src="/logo.png"
+            alt="Partner Logo"
+            className="w-10 h-10 object-contain"
+          />
           </div>
           <p className="text-neutral-600 font-medium">Loading Partner...</p>
         </div>
@@ -65,27 +112,35 @@ export default function App() {
     );
   }
 
-  const publicRoutes = ['/', '/signup', '/login'];
+  const publicRoutes = ["/", "/signup", "/login"];
   const isPublicRoute = publicRoutes.includes(currentPath);
 
-  const protectedRoutes = ['/dashboard', '/ask-ai', '/projects', '/clients', '/invoices', '/feed', '/settings'];
+  const protectedRoutes = [
+    "/dashboard",
+    "/ask-ai",
+    "/projects",
+    "/clients",
+    "/invoices",
+    "/feed",
+    "/settings",
+  ];
   const isProtectedRoute = protectedRoutes.includes(currentPath);
 
   if (isPublicRoute) {
-    if (user && currentPath !== '/') {
-      window.history.pushState({}, '', '/dashboard');
+    if (user && currentPath !== "/") {
+      window.history.pushState({}, "", "/dashboard");
       window.location.reload();
       return null;
     }
 
-    if (currentPath === '/') return <LandingPage />;
-    if (currentPath === '/signup') return <PartnerSignupPage />;
-    if (currentPath === '/login') return <PartnerLoginPage />;
+    if (currentPath === "/") return <LandingPage />;
+    if (currentPath === "/signup") return <PartnerSignupPage />;
+    if (currentPath === "/login") return <PartnerLoginPage />;
   }
 
-  if (currentPath === '/onboarding') {
+  if (currentPath === "/onboarding") {
     if (user) {
-      window.history.pushState({}, '', '/dashboard');
+      window.history.pushState({}, "", "/dashboard");
       window.location.reload();
       return null;
     }
@@ -94,80 +149,91 @@ export default function App() {
 
   if (isProtectedRoute) {
     if (!user) {
-      window.history.pushState({}, '', '/login');
+      window.history.pushState({}, "", "/login");
       window.location.reload();
       return null;
     }
 
     if (!user.businessName) {
-      window.history.pushState({}, '', '/onboarding');
+      window.history.pushState({}, "", "/onboarding");
       window.location.reload();
       return null;
     }
 
     return (
       <Layout currentPath={currentPath} user={user}>
-        {currentPath === '/dashboard' && <DashboardPage user={user} />}
-        {currentPath === '/ask-ai' && <AIChatbotPage user={user} />}
-        {currentPath === '/projects' && (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-large mb-6 mx-auto">
-              <span className="text-4xl">📁</span>
-            </div>
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">Projects</h2>
-            <p className="text-neutral-600 max-w-md mx-auto">
-              Manage all your construction projects in one place.
-            </p>
-          </div>
+        {currentPath === "/dashboard" && ( // In App.jsx
+          <DashboardPage
+            user={user}
+            onNavigateToProjects={(data) => {
+              if (data.action === "new") {
+                // Navigate to create project
+                setShowProjectDetails(true);
+                setSelectedProject({ id: "new", name: "New Project" });
+              } else if (data.action === "view") {
+                // Navigate to project details
+                setShowProjectDetails(true);
+                setSelectedProject(data.project);
+              }
+            }}
+          />
         )}
-        {currentPath === '/clients' && (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gradient-to-br from-secondary-500 to-secondary-600 rounded-2xl flex items-center justify-center shadow-large mb-6 mx-auto">
-              <span className="text-4xl">👥</span>
-            </div>
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">Clients</h2>
-            <p className="text-neutral-600 max-w-md mx-auto">
-              Keep track of all your client relationships and communications.
-            </p>
-          </div>
-        )}
-        {currentPath === '/invoices' && (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gradient-to-br from-accent-orange to-accent-yellow rounded-2xl flex items-center justify-center shadow-large mb-6 mx-auto">
-              <span className="text-4xl">💳</span>
-            </div>
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">Invoices</h2>
-            <p className="text-neutral-600 max-w-md mx-auto">
-              Create and manage professional invoices with ease.
-            </p>
-          </div>
-        )}
-        {currentPath === '/feed' && (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-2xl flex items-center justify-center shadow-large mb-6 mx-auto">
-              <span className="text-4xl">📡</span>
-            </div>
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">Activity Feed</h2>
-            <p className="text-neutral-600 max-w-md mx-auto">
-              Stay updated with all your business activities and notifications.
-            </p>
-          </div>
-        )}
-        {currentPath === '/settings' && (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gradient-to-br from-neutral-600 to-neutral-800 rounded-2xl flex items-center justify-center shadow-large mb-6 mx-auto">
-              <span className="text-4xl">⚙️</span>
-            </div>
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">Settings</h2>
-            <p className="text-neutral-600 max-w-md mx-auto">
-              Manage your account and business settings.
-            </p>
-          </div>
-        )}
+
+        {/* Projects Page with Details */}
+        {currentPath === "/projects" &&
+          (showProjectDetails ? (
+            <ProjectDetailsPage
+              project={selectedProject}
+              onBack={() => setShowProjectDetails(false)}
+            />
+          ) : (
+            <ProjectsPage
+              onNavigateToProject={(project) => {
+                setSelectedProject(project);
+                setShowProjectDetails(true);
+              }}
+            />
+          ))}
+        {currentPath === "/clients" &&
+          (showClientDetails ? (
+            <ClientDetailsPage
+              client={selectedClient}
+              onBack={() => setShowClientDetails(false)}
+            />
+          ) : (
+            <ClientsPage
+              onClientClick={(client) => {
+                setSelectedClient(client);
+                setShowClientDetails(true);
+              }}
+            />
+          ))}
+        {currentPath === "/invoices" &&
+          (showCreateInvoice ? (
+            <CreateInvoicePage
+              onBack={() => setShowCreateInvoice(false)}
+              user={user}
+            />
+          ) : showInvoiceDetails ? (
+            <InvoiceDetailsPage
+              invoice={selectedInvoice}
+              onBack={() => setShowInvoiceDetails(false)}
+              user={user}
+            />
+          ) : (
+            <InvoicesPage
+              onInvoiceClick={(invoice) => {
+                setSelectedInvoice(invoice);
+                setShowInvoiceDetails(true);
+              }}
+              onCreateInvoice={() => setShowCreateInvoice(true)}
+            />
+          ))}
+        {currentPath === "/settings" && <SettingsPage user={user} />}
       </Layout>
     );
   }
 
-  window.history.pushState({}, '', '/');
+  window.history.pushState({}, "", "/");
   return <LandingPage />;
 }

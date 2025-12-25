@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
+import AIChatPanel from '../AIChatPanel';
 import { Search, Bell, Menu, X, LayoutDashboard, Sparkles, FolderOpen, Users, Rss } from 'lucide-react';
 
 const Layout = ({ children, currentPath, user }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [notifications] = useState(3);
 
   const handleLogout = () => {
@@ -19,6 +21,14 @@ const Layout = ({ children, currentPath, user }) => {
     setIsMobileMenuOpen(false);
     window.history.pushState({}, '', path);
     window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
+  const handleOpenChat = () => {
+    setIsChatOpen(true);
+  };
+
+  const handleCloseChat = () => {
+    setIsChatOpen(false);
   };
 
   const getPageTitle = () => {
@@ -51,8 +61,20 @@ const Layout = ({ children, currentPath, user }) => {
           user={user}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
+          onOpenChat={handleOpenChat}
+          isCollapsed={isChatOpen}
         />
       </div>
+
+      {/* AI Chat Panel - Opens next to sidebar */}
+      {isChatOpen && (
+        <div className="hidden lg:block">
+          <AIChatPanel 
+            user={user}
+            onClose={handleCloseChat}
+          />
+        </div>
+      )}
 
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
@@ -68,6 +90,7 @@ const Layout = ({ children, currentPath, user }) => {
               user={user}
               onNavigate={handleNavigate}
               onLogout={handleLogout}
+              onOpenChat={handleOpenChat}
             />
           </div>
         </>
@@ -134,7 +157,7 @@ const Layout = ({ children, currentPath, user }) => {
               return (
                 <button
                   key={item.path}
-                  onClick={() => handleNavigate(item.path)}
+                  onClick={() => item.path === '/ask-ai' ? handleOpenChat() : handleNavigate(item.path)}
                   className={`flex flex-col items-center justify-center gap-1 transition-colors relative ${
                     active 
                       ? 'text-primary-600' 

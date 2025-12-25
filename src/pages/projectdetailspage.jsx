@@ -9,11 +9,11 @@ import {
 } from 'lucide-react';
 
 // Import tab components
-import ProjectOverview from './ProjectOverview';
-import ProjectEstimates from './ProjectEstimates';
-import ProjectInvoices from './ProjectInvoices';
-import ProjectDocuments from './ProjectDocuments';
-import ProjectFiles from './ProjectFiles';
+import ProjectOverview from '../components/project/ProjectOverview';
+import ProjectEstimates from '../components/project/ProjectEstimates';
+import ProjectInvoices from '../components/project/ProjectInvoices';
+import ProjectDocuments from '../components/project/ProjectDocuments';
+import ProjectFiles from '../components/project/ProjectFiles';
 
 const ProjectDetailsPage = ({ project, onBack }) => {
   const [activeTab, setActiveTab] = useState('overview');
