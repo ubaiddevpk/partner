@@ -7,7 +7,7 @@ import Layout from "./components/layout/Layout";
 import DashboardPage from "./pages/Dashboardpage";
 import ClientsPage from "./pages/ClientsPage";
 import ProjectsPage from "./pages/Projectspage";
-import ProjectDetailsPage from "./pages/ProjectDetailsPage";
+import ProjectDetailsPage from "./pages/projectdetailspage";
 import ClientDetailsPage from "./pages/ClientDetailsPage";
 // Add these imports at the top
 import InvoicesPage from "./pages/InvoicesPage";
