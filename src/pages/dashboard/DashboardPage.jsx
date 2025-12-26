@@ -7,7 +7,7 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
-import ProjectsPage from '../pages/Projectspage';
+import ProjectsPage from '../projects/ProjectsPage';
 
 const DashboardPage = ({ user, onNavigateToProjects }) => {
   const [greeting, setGreeting] = useState('');

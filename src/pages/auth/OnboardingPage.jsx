@@ -1,41 +1,112 @@
 import React, { useState } from 'react';
 import { Building2, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 
+import { supabase } from '../../utils/supabase.js';
+
+
+import { useEffect } from 'react';
+
 const OnboardingPage = ({ onComplete }) => {
   const [llcName, setLlcName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+   const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Add this
+    useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error || !user) {
+          console.log('No authenticated user, redirecting to login');
+          window.location.href = '/login';
+          return;
+        }
+        
+        // Check if user already has business name
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('business_name')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (profile?.business_name) {
+          console.log('Business already set, redirecting to dashboard');
+          window.location.href = '/dashboard';
+          return;
+        }
+        
+        setIsCheckingAuth(false);
+      } catch (err) {
+        console.error('Auth check error:', err);
+        window.location.href = '/login';
+      }
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+    checkAuth();
+  }, []);
 
-    if (!llcName.trim()) {
-      setError('Please enter your business name');
+  // Add early return while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg mb-4 animate-pulse mx-auto bg-white">
+            <img src="/logo.png" alt="Partner Logo" className="w-10 h-10 object-contain" />
+          </div>
+          <p className="text-neutral-600 font-medium">Verifying authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+
+  if (!llcName.trim()) {
+    setError('Please enter your business name');
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    // Get logged-in user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setError('User not authenticated');
+      setIsSubmitting(false);
       return;
     }
 
-    setIsSubmitting(true);
+    // Save business name to profiles table
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .upsert({
+        id: user.id,
+        business_name: llcName.trim(),
+        email: user.email,
+        full_name: user.user_metadata?.full_name
+      }, {
+        onConflict: 'id'
+      });
 
-    // Simulate API call
-    setTimeout(() => {
-      // Store business name in localStorage
-      localStorage.setItem('businessName', llcName);
-      localStorage.setItem('onboardingComplete', 'true');
-      
-      // Call parent completion handler
-      if (onComplete) {
-        onComplete(llcName);
-      }
-      
-      // Navigate to dashboard
-      window.history.pushState({}, '', '/dashboard');
-      window.dispatchEvent(new PopStateEvent('popstate'));
-      
+    if (profileError) {
+      console.error(profileError);
+      setError('Failed to save profile');
       setIsSubmitting(false);
-    }, 1500);
-  };
+      return;
+    }
 
+    // Redirect to dashboard
+    window.location.href = '/dashboard';
+  } catch (err) {
+    console.error('Error:', err);
+    setError('Something went wrong');
+    setIsSubmitting(false);
+  }
+};
   const benefits = [
     'AI-powered project estimates',
     'Professional proposals in seconds',

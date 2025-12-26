@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Phone, User, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { supabase } from '../../utils/supabase.js';
 
 const PartnerSignupPage = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -8,33 +9,67 @@ const PartnerSignupPage = () => {
   const [email, setEmail] = useState('');
 const [name, setName] = useState('');
 
-// Update handleSubmit function
-const handleSubmit = () => {
-  console.log('Signup submitted:', { name, email, phoneNumber, acceptSMS, acceptMarketing });
-  
-  // Validate required fields
+const handleSubmit = async () => {
   if (!name || !email || !phoneNumber) {
     alert('Please fill in all required fields');
     return;
   }
-  
-  // Store user data
-  const userData = {
-    name: name,
-    email: email,
-    phone: phoneNumber
-  };
-  localStorage.setItem('user', JSON.stringify(userData));
-  
-  // Redirect to onboarding
-  window.history.pushState({}, '', '/onboarding');
-  window.dispatchEvent(new PopStateEvent('popstate'));
+
+  try {
+    // Sign up user in Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password: Math.random().toString(36).slice(-8), // generate random password
+      options: {
+        data: {
+          full_name: name
+        }
+      }
+    });
+
+    if (authError) {
+      alert(authError.message);
+      return;
+    }
+
+    if (!authData.user) {
+      alert('Sign up failed. Please try again.');
+      return;
+    }
+
+    // Store user in profiles table
+    const { error: profileError } = await supabase.from('profiles').insert({
+      id: authData.user.id,
+      full_name: name,
+      email,
+      phone: phoneNumber
+    });
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
+    }
+
+    // Redirect to onboarding
+    window.location.href = '/onboarding';
+  } catch (err) {
+    console.error('Sign up error:', err);
+    alert('An error occurred during sign up');
+  }
 };
 
-  const handleGoogleSignup = () => {
-    console.log('Google signup clicked');
-    // Add Google OAuth logic here
-  };
+const handleGoogleSignup = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/onboarding`
+    }
+  });
+
+  if (error) {
+    console.error('Google login error:', error.message);
+    alert('Google sign-up failed. Please try again.');
+  }
+};
 
   const benefits = [
     'AI-powered estimates in seconds',

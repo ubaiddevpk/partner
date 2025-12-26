@@ -1,37 +1,54 @@
 import React, { useState } from 'react';
 import { Mail, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
+import { supabase } from '../../utils/supabase';
 
 const PartnerLoginPage = () => {
   const [loginMethod, setLoginMethod] = useState('email'); // 'phone' or 'email'
   const [email, setEmail] = useState('');
 
-  const handleContinue = () => {
-  console.log('Login with:', loginMethod, email);
-  
-  // Simulate login - check if user exists
-  const storedUser = localStorage.getItem('user');
-  const onboardingComplete = localStorage.getItem('onboardingComplete');
-  
-  if (storedUser && onboardingComplete === 'true') {
-    // User exists and completed onboarding - go to dashboard
-    window.history.pushState({}, '', '/dashboard');
-  } else if (storedUser) {
-    // User exists but didn't complete onboarding
-    window.history.pushState({}, '', '/onboarding');
-  } else {
-    // New user - need to sign up
-    alert('Account not found. Please sign up first.');
-    window.history.pushState({}, '', '/signup');
+const handleContinue = async () => {
+  if (!email) {
+    alert('Please enter your email');
+    return;
   }
-  
-  window.dispatchEvent(new PopStateEvent('popstate'));
+
+  try {
+    // Send magic link
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`
+      }
+    });
+
+    if (error) {
+      alert(error.message);
+    } else {
+      alert('Check your email for the login link!');
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    alert('An error occurred. Please try again.');
+  }
 };
+const handleGoogleLogin = async () => {
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`
+      }
+    });
 
-  const handleGoogleLogin = () => {
-    console.log('Google login clicked');
-    // Add Google OAuth logic here
-  };
-
+    if (error) {
+      console.error('Google login error:', error);
+      alert('Google login failed. Please try again.');
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    alert('An error occurred. Please try again.');
+  }
+};
   const testimonials = [
     {
       quote: "At first I was skeptical. I've completed 3 estimates using this system and it puts it right on the money.",
