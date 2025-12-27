@@ -11,39 +11,37 @@ const OnboardingPage = ({ onComplete }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
    const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Add this
-    useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        
-        if (error || !user) {
-          console.log('No authenticated user, redirecting to login');
-          window.location.href = '/login';
-          return;
-        }
-        
-        // Check if user already has business name
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('business_name')
-          .eq('id', user.id)
-          .maybeSingle();
-        
-        if (profile?.business_name) {
-          console.log('Business already set, redirecting to dashboard');
-          window.location.href = '/dashboard';
-          return;
-        }
-        
-        setIsCheckingAuth(false);
-      } catch (err) {
-        console.error('Auth check error:', err);
+useEffect(() => {
+  const checkAuth = async () => {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
         window.location.href = '/login';
+        return;
       }
-    };
+      
+      // Check if already has business
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('business_name')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (profile?.business_name) {
+        window.location.href = '/dashboard';
+        return;
+      }
+      
+      setIsCheckingAuth(false);
+    } catch (err) {
+      console.error('Auth check error:', err);
+      window.location.href = '/login';
+    }
+  };
 
-    checkAuth();
-  }, []);
+  checkAuth();
+}, []);
 
   // Add early return while checking auth
   if (isCheckingAuth) {

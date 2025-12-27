@@ -57,17 +57,30 @@ const handleSubmit = async () => {
   }
 };
 
-const handleGoogleSignup = async () => {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${window.location.origin}/auth/callback`
-    }
-  });
+const handleGoogleAuth = async () => {
+  try {
+    const redirectUrl = window.location.origin === 'http://localhost:5173'
+      ? 'http://localhost:5173/auth/callback'
+      : 'https://partner-rho.vercel.app/auth/callback';
 
-  if (error) {
-    console.error('Google login error:', error.message);
-    alert('Google sign-up failed. Please try again.');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        }
+      }
+    });
+
+    if (error) {
+      console.error('Google auth error:', error);
+      alert('Google authentication failed. Please try again.');
+    }
+  } catch (err) {
+    console.error('Auth error:', err);
+    alert('An error occurred. Please try again.');
   }
 };
 
@@ -207,7 +220,7 @@ const handleGoogleSignup = async () => {
 
                   {/* Google Sign Up */}
                   <button
-                    onClick={handleGoogleSignup}
+                    onClick={handleGoogleAuth}
                     className="w-full py-4 px-6 bg-white border-2 border-neutral-200 hover:border-neutral-300 rounded-xl font-semibold text-neutral-700 transition-all duration-300 hover:shadow-medium flex items-center justify-center gap-3 group"
                   >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
