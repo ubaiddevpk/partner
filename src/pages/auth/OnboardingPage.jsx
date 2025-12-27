@@ -17,25 +17,34 @@ useEffect(() => {
       const { data: { user }, error } = await supabase.auth.getUser();
       
       if (error || !user) {
+        console.log('❌ No user found, redirecting to login');
         window.location.href = '/login';
         return;
       }
       
+      console.log('✅ User found:', user.id);
+      
       // Check if already has business
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('business_name')
         .eq('id', user.id)
         .maybeSingle();
       
+      console.log('📋 Profile check:', { profile, hasBusinessName: !!profile?.business_name });
+      
       if (profile?.business_name) {
+        console.log('🏢 Already has business, redirecting to dashboard');
         window.location.href = '/dashboard';
         return;
       }
       
+      // All good - show the form
+      console.log('✅ Ready for onboarding');
       setIsCheckingAuth(false);
+      
     } catch (err) {
-      console.error('Auth check error:', err);
+      console.error('💥 Auth check error:', err);
       window.location.href = '/login';
     }
   };
@@ -43,7 +52,6 @@ useEffect(() => {
   checkAuth();
 }, []);
 
-  // Add early return while checking auth
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50">
@@ -78,30 +86,69 @@ const handleSubmit = async (e) => {
       return;
     }
 
-    // Save business name to profiles table
-    const { error: profileError } = await supabase
+    console.log('💾 Saving business name:', llcName.trim());
+
+    // First, check if profile exists
+    const { data: existingProfile } = await supabase
       .from('profiles')
-      .upsert({
-        id: user.id,
-        business_name: llcName.trim(),
-        email: user.email,
-        full_name: user.user_metadata?.full_name
-      }, {
-        onConflict: 'id'
-      });
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    let profileResult;
+
+    if (existingProfile) {
+      // Profile exists - UPDATE it
+      console.log('📝 Updating existing profile...');
+      profileResult = await supabase
+        .from('profiles')
+        .update({
+          business_name: llcName.trim(),
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || 'User'
+        })
+        .eq('id', user.id)
+        .select()
+        .single();
+    } else {
+      // Profile doesn't exist - INSERT it
+      console.log('➕ Creating new profile...');
+      profileResult = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          email: user.email,
+          business_name: llcName.trim(),
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || 'User'
+        })
+        .select()
+        .single();
+    }
+
+    const { data: updatedProfile, error: profileError } = profileResult;
 
     if (profileError) {
-      console.error(profileError);
-      setError('Failed to save profile');
+      console.error('❌ Profile save error:', profileError);
+      setError('Failed to save profile. Please try again.');
       setIsSubmitting(false);
       return;
     }
 
-    // Redirect to dashboard
+    console.log('✅ Profile saved:', updatedProfile);
+
+    // Signal context to refresh
+    localStorage.setItem('profile_updated', Date.now().toString());
+    window.dispatchEvent(new Event('storage'));
+
+    // Wait for context to update
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Force redirect to dashboard
+    console.log('🏢 Redirecting to dashboard...');
     window.location.href = '/dashboard';
+
   } catch (err) {
-    console.error('Error:', err);
-    setError('Something went wrong');
+    console.error('💥 Error:', err);
+    setError('Something went wrong. Please try again.');
     setIsSubmitting(false);
   }
 };

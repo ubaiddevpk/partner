@@ -7,58 +7,58 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ ADD THIS: Function to manually refresh user data
-  const refreshUser = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("business_name, full_name, phone")
-          .eq("id", session.user.id)
-          .maybeSingle();
+const refreshUser = async () => {
+  try {
+    console.log('🔄 Refreshing user data...');
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session?.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("business_name, full_name, phone")
+        .eq("id", session.user.id)
+        .maybeSingle();
 
-        setUser({
-          id: session.user.id,
-          name: profile?.full_name || session.user.user_metadata?.full_name || "User",
-          email: session.user.email,
-          phone: profile?.phone || "",
-          businessName: profile?.business_name || null,
-        });
-      }
-    } catch (error) {
-      console.error("Error refreshing user:", error);
+      console.log('✅ Profile data:', profile);
+
+      setUser({
+        id: session.user.id,
+        name: profile?.full_name || session.user.user_metadata?.full_name || "User",
+        email: session.user.email,
+        phone: profile?.phone || "",
+        businessName: profile?.business_name || null,
+      });
+
+      console.log('✅ User state updated with businessName:', profile?.business_name);
     }
-  };
+  } catch (error) {
+    console.error("❌ Error refreshing user:", error);
+  }
+};
 
-  useEffect(() => {
-    let mounted = true;
-    let timeoutId;
+useEffect(() => {
+  let mounted = true;
+  let timeoutId;
 
-    const checkAuth = async () => {
-      try {
-        // Check if we're on the callback page - if so, give more time for OAuth processing
-        const isCallbackPage = window.location.pathname === '/auth/callback';
-        const timeoutDuration = isCallbackPage ? 10000 : 5000; // 10s for callback, 5s otherwise
+  const checkAuth = async () => {
+    try {
+      // ✅ ADD THIS: Skip auth check on callback page
+      if (window.location.pathname === '/auth/callback') {
+        setIsLoading(false);
+        return;
+      }
 
-        timeoutId = setTimeout(() => {
-          if (mounted && isLoading) {
-            // Only warn if not on callback page (callback page handles its own flow)
-            if (!isCallbackPage) {
-              console.warn('Auth check timeout - proceeding as unauthenticated');
-            }
-            setIsLoading(false);
-            setUser(null);
-          }
-        }, timeoutDuration);
+      const timeoutDuration = 5000;
 
-        // Wait a bit longer on callback page for OAuth hash processing
-        if (isCallbackPage) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+      timeoutId = setTimeout(() => {
+        if (mounted && isLoading) {
+          console.warn('Auth check timeout - proceeding as unauthenticated');
+          setIsLoading(false);
+          setUser(null);
         }
+      }, timeoutDuration);
 
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError) {
           console.error("Session error:", sessionError);
