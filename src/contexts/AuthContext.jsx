@@ -38,13 +38,25 @@ export const AuthProvider = ({ children }) => {
 
     const checkAuth = async () => {
       try {
+        // Check if we're on the callback page - if so, give more time for OAuth processing
+        const isCallbackPage = window.location.pathname === '/auth/callback';
+        const timeoutDuration = isCallbackPage ? 10000 : 5000; // 10s for callback, 5s otherwise
+
         timeoutId = setTimeout(() => {
           if (mounted && isLoading) {
-            console.warn('Auth check timeout - proceeding as unauthenticated');
+            // Only warn if not on callback page (callback page handles its own flow)
+            if (!isCallbackPage) {
+              console.warn('Auth check timeout - proceeding as unauthenticated');
+            }
             setIsLoading(false);
             setUser(null);
           }
-        }, 5000);
+        }, timeoutDuration);
+
+        // Wait a bit longer on callback page for OAuth hash processing
+        if (isCallbackPage) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
 
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
