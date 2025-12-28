@@ -26,3 +26,4 @@ export const Route = ({ path, element, currentPath }) => {
   }
   return null;
 };
+

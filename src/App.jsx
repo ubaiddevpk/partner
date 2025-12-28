@@ -3,7 +3,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { Router, Route } from "./utils/router";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 import { PublicRoute } from "./components/shared/PublicRoute";
-
+import AuthCallback from "./pages/auth/AuthCallback";
 // Page imports
 import LandingPage from "./pages/LandingPage";
 import PartnerSignupPage from "./pages/auth/PartnerSignupPage";
@@ -31,7 +31,8 @@ export default function App() {
         <Route path="/" element={<PublicRoute element={<LandingPage />} />} />
         <Route path="/signup" element={<PublicRoute element={<PartnerSignupPage />} />} />
         <Route path="/login" element={<PublicRoute element={<PartnerLoginPage />} />} />
-        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
+
         
         {/* Onboarding - Requires auth but not business */}
         <Route 
@@ -42,7 +43,7 @@ export default function App() {
         {/* Protected Routes - Require auth AND business */}
         <Route 
           path="/dashboard" 
-          element={<ProtectedRoute element={<Layout><DashboardPage /></Layout>} requiresBusiness={true} />} 
+          element={<ProtectedRoute element={<Layout><DashboardPage /></Layout>} requiresBusiness={false} />} 
         />
         
         <Route 
