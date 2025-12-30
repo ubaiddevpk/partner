@@ -3,7 +3,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { Router, Route } from "./utils/router";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 import { PublicRoute } from "./components/shared/PublicRoute";
-import AuthCallback from "./pages/auth/AuthCallback";
+
 // Page imports
 import LandingPage from "./pages/LandingPage";
 import PartnerSignupPage from "./pages/auth/PartnerSignupPage";
@@ -29,65 +29,159 @@ export default function App() {
       <Router>
         {/* Public Routes */}
         <Route path="/" element={<PublicRoute element={<LandingPage />} />} />
-        <Route path="/signup" element={<PublicRoute element={<PartnerSignupPage />} />} />
-        <Route path="/login" element={<PublicRoute element={<PartnerLoginPage />} />} />
-      <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route
+          path="/signup"
+          element={<PublicRoute element={<PartnerSignupPage />} />}
+        />
+        <Route
+          path="/login"
+          element={<PublicRoute element={<PartnerLoginPage />} />}
+        />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
-        
         {/* Onboarding - Requires auth but not business */}
-        <Route 
-          path="/onboarding" 
-          element={<ProtectedRoute element={<OnboardingPage />} requiresBusiness={false} />} 
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute
+              element={<OnboardingPage />}
+              requiresBusiness={false}
+            />
+          }
         />
-        
+
         {/* Protected Routes - Require auth AND business */}
-        <Route 
-          path="/dashboard" 
-          element={<ProtectedRoute element={<Layout><DashboardPage /></Layout>} requiresBusiness={false} />} 
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute
+              element={
+                <Layout>
+                  <DashboardPage />
+                </Layout>
+              }
+              requiresBusiness={false}
+            />
+          }
         />
-        
-        <Route 
-          path="/projects" 
-          element={<ProtectedRoute element={<Layout><ProjectsPage /></Layout>} requiresBusiness={true} />} 
+
+        <Route
+          path="/projects"
+          element={
+            <ProtectedRoute
+              element={
+                <Layout>
+                  <ProjectsPage />
+                </Layout>
+              }
+              requiresBusiness={true}
+            />
+          }
         />
-        
+
         {/* Add this - Project Details */}
-        <Route 
-          path="/projects/:id" 
-          element={<ProtectedRoute element={<Layout><ProjectDetailsPage /></Layout>} requiresBusiness={true} />} 
+        <Route
+          path="/projects/:id"
+          element={
+            <ProtectedRoute
+              element={
+                <Layout>
+                  <ProjectDetailsPage />
+                </Layout>
+              }
+              requiresBusiness={true}
+            />
+          }
         />
-        
-        <Route 
-          path="/clients" 
-          element={<ProtectedRoute element={<Layout><ClientsPage /></Layout>} requiresBusiness={true} />} 
+
+        <Route
+          path="/clients"
+          element={
+            <ProtectedRoute
+              element={
+                <Layout>
+                  <ClientsPage />
+                </Layout>
+              }
+              requiresBusiness={true}
+            />
+          }
         />
-        
+
         {/* Add this - Client Details */}
-        <Route 
-          path="/clients/:id" 
-          element={<ProtectedRoute element={<Layout><ClientDetailsPage /></Layout>} requiresBusiness={true} />} 
+        <Route
+          path="/clients/:id"
+          element={
+            <ProtectedRoute
+              element={
+                <Layout>
+                  <ClientDetailsPage />
+                </Layout>
+              }
+              requiresBusiness={true}
+            />
+          }
         />
-        
-        <Route 
-          path="/invoices" 
-          element={<ProtectedRoute element={<Layout><InvoicesPage /></Layout>} requiresBusiness={true} />} 
+
+        {/* Invoice Routes - ORDER IS CRITICAL */}
+
+        {/* 1. Most specific first - /invoices/create */}
+        <Route
+          path="/invoices/create"
+          element={
+            <ProtectedRoute
+              element={
+                <Layout>
+                  <CreateInvoicePage />
+                </Layout>
+              }
+              requiresBusiness={true}
+            />
+          }
         />
-        
-        {/* Add this - Create Invoice */}
-        <Route 
-          path="/invoices/create" 
-          element={<ProtectedRoute element={<Layout><CreateInvoicePage /></Layout>} requiresBusiness={true} />} 
+
+        {/* 2. Dynamic route second - /invoices/:id */}
+        <Route
+          path="/invoices/:id"
+          element={
+            <ProtectedRoute
+              element={
+                <Layout>
+                  <InvoiceDetailsPage />
+                </Layout>
+              }
+              requiresBusiness={true}
+            />
+          }
         />
-        
-        {/* Add this - Invoice Details */}
-        <Route 
-          path="/invoices/:id" 
-          element={<ProtectedRoute element={<Layout><InvoiceDetailsPage /></Layout>} requiresBusiness={true} />} 
+
+        {/* 3. List page last - /invoices */}
+        <Route
+          path="/invoices"
+          element={
+            <ProtectedRoute
+              element={
+                <Layout>
+                  <InvoicesPage />
+                </Layout>
+              }
+              requiresBusiness={true}
+            />
+          }
         />
-        
-        <Route 
-          path="/settings" 
-          element={<ProtectedRoute element={<Layout><SettingsPage /></Layout>} requiresBusiness={true} />} 
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute
+              element={
+                <Layout>
+                  <SettingsPage />
+                </Layout>
+              }
+              requiresBusiness={true}
+            />
+          }
         />
       </Router>
     </AuthProvider>

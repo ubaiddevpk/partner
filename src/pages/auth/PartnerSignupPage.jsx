@@ -19,10 +19,11 @@ const handleSubmit = async () => {
     // Sign up user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
-      password: Math.random().toString(36).slice(-8), // generate random password
+      password: Math.random().toString(36).slice(-8),
       options: {
         data: {
-          full_name: name
+          full_name: name,
+          phone: phoneNumber
         }
       }
     });
@@ -37,19 +38,9 @@ const handleSubmit = async () => {
       return;
     }
 
-    // Store user in profiles table
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: authData.user.id,
-      full_name: name,
-      email,
-      phone: phoneNumber
-    });
+    console.log('✅ User created:', authData.user.id);
 
-    if (profileError) {
-      console.error('Profile creation error:', profileError);
-    }
-
-    // Redirect to onboarding
+    // Redirect to onboarding (profile will be created there)
     window.location.href = '/onboarding';
   } catch (err) {
     console.error('Sign up error:', err);
@@ -59,14 +50,10 @@ const handleSubmit = async () => {
 
 const handleGoogleAuth = async () => {
   try {
-    const redirectUrl = window.location.origin === 'http://localhost:5173'
-      ? 'http://localhost:5173/auth/callback'
-      : 'https://partner-rho.vercel.app/auth/callback';
-
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',

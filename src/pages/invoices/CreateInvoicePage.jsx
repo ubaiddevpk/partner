@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { ArrowLeft, MoreVertical, Plus, X, Bold, Italic, List, Upload, Trash2, UserPlus } from 'lucide-react';
+import { useNavigate } from '../../utils/router';
+import { useAuth } from '../../contexts/AuthContext';
 
-const CreateInvoicePage = ({ onBack, user }) => {
+const CreateInvoicePage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [viewMode, setViewMode] = useState('invoice'); // 'invoice' or 'client'
   const [invoiceData, setInvoiceData] = useState({
     title: '',
@@ -86,7 +90,7 @@ const CreateInvoicePage = ({ onBack, user }) => {
         <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
-              onClick={onBack}
+           onClick={() => navigate('/invoices')}
               className="w-10 h-10 flex items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />

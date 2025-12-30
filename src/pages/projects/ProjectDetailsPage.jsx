@@ -16,8 +16,18 @@ import ProjectDocuments from '../../components/project/ProjectDocuments';
 import ProjectFiles from '../../components/project/ProjectFiles';
 
 
-const ProjectDetailsPage = ({ project, onBack }) => {
+const ProjectDetailsPage = ({ params }) => {
+  const { id } = params || {};
   const [activeTab, setActiveTab] = useState('overview');
+  const project = {
+  id,
+  name: "Untitled project"
+};
+
+const handleBack = () => {
+  window.history.pushState({}, "", "/projects");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -50,7 +60,7 @@ const ProjectDetailsPage = ({ project, onBack }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
-            onClick={onBack}
+            onClick={handleBack}
             className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-neutral-100 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-neutral-600" />

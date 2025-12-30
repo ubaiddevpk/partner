@@ -2,20 +2,52 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import AIChatPanel from '../AIChatPanel';
 import { Search, Bell, Menu, X, LayoutDashboard, Sparkles, FolderOpen, Users, Rss } from 'lucide-react';
+import { supabase } from '../../utils/supabase';
 
 const Layout = ({ children, currentPath, user }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [notifications] = useState(3);
 
-  const handleLogout = () => {
-    localStorage.removeItem('businessName');
-    localStorage.removeItem('onboardingComplete');
-    localStorage.removeItem('user');
+
+ const handleLogout = async () => {
+  try {
+    console.log("🚪 Logging out...");
     
-    window.history.pushState({}, '', '/login');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  };
+    // Clear user state immediately
+   
+    
+    // Sign out from Supabase
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      console.error('Logout error:', error);
+    }
+    
+    // Clear all possible auth storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear cookies if any
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    
+    console.log("✅ Logged out successfully");
+    
+    // Force complete reload to login page
+    window.location.replace('/login');
+  } catch (error) {
+    console.error('Logout error:', error);
+    
+    // Even if there's an error, clear everything and redirect
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.replace('/login');
+  }
+};
 
   const handleNavigate = (path) => {
     setIsMobileMenuOpen(false);

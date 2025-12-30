@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
 import { ArrowLeft, MoreVertical, Info, CheckCircle, Clock, DollarSign } from 'lucide-react';
-
-const InvoiceDetailsPage = ({ invoice, onBack, user }) => {
+import { useNavigate } from '../../utils/router';
+import { useAuth } from '../../contexts/AuthContext';
+import React, { useState } from 'react';
+const InvoiceDetailsPage = ({ params }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [paymentTrackerExpanded, setPaymentTrackerExpanded] = useState(false);
+
+  const invoice = {
+    id: params?.id,
+    title: 'Sample Invoice',
+    client: 'ikram'
+  };
 
   // Mock invoice details
   const invoiceDetails = {
@@ -45,7 +54,7 @@ const InvoiceDetailsPage = ({ invoice, onBack, user }) => {
         <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
-              onClick={onBack}
+              onClick={() => navigate('/invoices')}
               className="w-10 h-10 flex items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />

@@ -33,14 +33,10 @@ const handleContinue = async () => {
 };
 const handleGoogleAuth = async () => {
   try {
-    const redirectUrl = window.location.origin === 'http://localhost:5173'
-      ? 'http://localhost:5173/auth/callback'
-      : 'https://partner-rho.vercel.app/auth/callback';
-
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',

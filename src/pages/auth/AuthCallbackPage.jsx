@@ -1,116 +1,60 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
 
 const AuthCallbackPage = () => {
-  const [status, setStatus] = useState('Processing authentication...');
-
   useEffect(() => {
-    let mounted = true;
-    let redirected = false;
-
-    const handleCallback = async () => {
+    const handleAuth = async () => {
       try {
-        console.log('🔄 Starting auth callback...');
-
-        // Wait for Supabase to process OAuth
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        if (!mounted || redirected) return;
-
-        // Get session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError || !session?.user) {
-          console.error('❌ Session error:', sessionError);
-          if (mounted && !redirected) {
-            redirected = true;
-            setStatus('Authentication failed. Redirecting...');
-            setTimeout(() => window.location.href = '/login', 2000);
-          }
+        console.log('🔄 Callback started');
+        
+        // Wait briefly for auth to settle
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error || !session) {
+          console.error('❌ No session:', error);
+          window.location.replace('/login');
           return;
         }
 
-        console.log('✅ User signed in:', session.user.id);
-        setStatus('Setting up your profile...');
+        console.log('✅ Session found:', session.user.id);
 
-        // Check if profile exists
-        const { data: existingProfile } = await supabase
+        // Check profile - use maybeSingle() to avoid error
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('id, business_name')
+          .select('business_name')
           .eq('id', session.user.id)
-          .maybeSingle();
+          .maybeSingle(); // ← This is KEY - won't throw error if no profile
 
-        console.log('📋 Existing profile:', existingProfile);
-
-        if (!existingProfile) {
-          // Create profile
-          console.log('➕ Creating new profile...');
-          
-          const { data: newProfile, error: insertError } = await supabase
-            .from('profiles')
-            .insert({
-              id: session.user.id,
-              email: session.user.email,
-              full_name: session.user.user_metadata?.full_name || 
-                         session.user.user_metadata?.name || 
-                         'User',
-              phone: null,
-              business_name: null
-            })
-            .select()
-            .single();
-
-          if (insertError) {
-            console.error('❌ Profile creation error:', insertError);
-            console.error('Error details:', JSON.stringify(insertError, null, 2));
-            // Continue to onboarding anyway
-          } else {
-            console.log('✅ Profile created:', newProfile);
-          }
-
-          // Wait a bit to ensure profile is saved
-          await new Promise(resolve => setTimeout(resolve, 500));
+        if (profileError) {
+          console.error('Profile check error:', profileError);
         }
 
-        // Redirect
-        if (mounted && !redirected) {
-          redirected = true;
-          if (existingProfile?.business_name) {
-            console.log('🏢 Has business, redirecting to dashboard...');
-            setStatus('Welcome back!');
-            setTimeout(() => window.location.href = '/dashboard', 500);
-          } else {
-            console.log('📝 No business, redirecting to onboarding...');
-            setStatus('Setting up your account...');
-            setTimeout(() => window.location.href = '/onboarding', 500);
-          }
-        }
+        console.log('📋 Profile:', profile);
 
+        // Redirect based on profile
+        if (profile?.business_name) {
+          console.log('🏢 → Dashboard');
+          window.location.replace('/dashboard');
+        } else {
+          console.log('📝 → Onboarding');
+          window.location.replace('/onboarding');
+        }
       } catch (error) {
-        console.error('💥 Fatal error:', error);
-        if (mounted && !redirected) {
-          redirected = true;
-          setStatus('An error occurred. Redirecting...');
-          setTimeout(() => window.location.href = '/login', 2000);
-        }
+        console.error('💥 Callback error:', error);
+        window.location.replace('/login');
       }
     };
 
-    handleCallback();
-
-    return () => {
-      mounted = false;
-    };
+    handleAuth();
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg mb-4 animate-pulse mx-auto bg-white">
-          <img src="/logo.png" alt="Partner Logo" className="w-10 h-10 object-contain" />
-        </div>
-        <p className="text-neutral-600 font-medium">{status}</p>
-        <p className="text-xs text-neutral-400 mt-2">Please wait...</p>
+        <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-neutral-600">Processing...</p>
       </div>
     </div>
   );

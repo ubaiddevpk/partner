@@ -13,8 +13,22 @@ import {
   Info
 } from 'lucide-react';
 
-const ClientDetailsPage = ({ client, onBack }) => {
-  const [activeTab, setActiveTab] = useState('profile');
+import { useNavigate } from '../../utils/router';
+
+const ClientDetailsPage = ({ params }) => {  // Change this line
+  const navigate = useNavigate();
+  
+  // Add mock client data at the top
+  const client = {
+    id: params?.id || '1',
+    name: 'Sample Client',
+    phone: '(269) 626-5944',
+    email: 'client@example.com',
+    address: '123 Main St, City, State 12345'
+  };
+   const handleBack = () => {
+    navigate('/clients');
+  };
 
   // Mock data for client value and projects
   const clientValue = {
@@ -48,7 +62,7 @@ const ClientDetailsPage = ({ client, onBack }) => {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <button
-            onClick={onBack}
+            onClick={handleBack}
             className="w-10 h-10 flex items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors border border-neutral-200"
           >
             <ArrowLeft className="w-5 h-5" />

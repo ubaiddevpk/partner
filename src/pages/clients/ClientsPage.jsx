@@ -10,6 +10,7 @@ import {
   X,
   ChevronRight,
 } from "lucide-react";
+import { useNavigate } from "../../utils/router";
 
 const ClientsPage = ({ onClientClick }) => {
   const [showNewClientModal, setShowNewClientModal] = useState(false);
@@ -22,6 +23,7 @@ const ClientsPage = ({ onClientClick }) => {
     referralSource: "",
     createProject: false,
   });
+  const navigate = useNavigate();
 
   // Mock clients data
   const [clients, setClients] = useState([
@@ -186,7 +188,7 @@ const ClientsPage = ({ onClientClick }) => {
           {filteredClients.map((client, index) => (
             <div
               key={client.id}
-              onClick={() => onClientClick(client)}
+             onClick={() => navigate(`/clients/${client.id}`)}
               className="p-6 hover:bg-neutral-50 transition-colors cursor-pointer group"
             >
               <div className="flex items-center gap-4">

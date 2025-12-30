@@ -9,11 +9,14 @@ import {
   LayoutGrid,
   List
 } from 'lucide-react';
+import { useNavigate } from '../../utils/router';
 
-const ProjectsPage = ({ onNavigateToProject }) => {
+const ProjectsPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [viewMode, setViewMode] = useState('list');
   const [searchQuery, setSearchQuery] = useState('');
+  
 
   const tabs = [
     { id: 'all', label: 'All', count: 53 },
@@ -75,11 +78,9 @@ const ProjectsPage = ({ onNavigateToProject }) => {
     }
   };
 
-  const handleProjectClick = (project) => {
-    if (onNavigateToProject) {
-      onNavigateToProject(project);
-    }
-  };
+const handleProjectClick = (project) => {
+  navigate(`/projects/${project.id}`);
+};
 
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
