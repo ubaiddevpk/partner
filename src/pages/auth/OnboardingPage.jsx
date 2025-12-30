@@ -29,8 +29,13 @@ const OnboardingPage = ({ onComplete }) => {
         console.log("📋 User metadata:", user.user_metadata);
 
         // Check if already has business in user_metadata
-        if (user.user_metadata?.business_name) {
-          console.log("🏢 Already has business, redirecting to dashboard");
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("business_name")
+          .eq("id", user.id)
+          .single();
+
+        if (profile?.business_name) {
           window.location.href = "/dashboard";
           return;
         }
@@ -66,70 +71,115 @@ const OnboardingPage = ({ onComplete }) => {
     );
   }
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setError("");
 
-  if (!llcName.trim()) {
-    setError("Please enter your business name");
-    return;
-  }
+  //   if (!llcName.trim()) {
+  //     setError("Please enter your business name");
+  //     return;
+  //   }
 
-  setIsSubmitting(true);
+  //   setIsSubmitting(true);
 
-  try {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+  //   try {
+  //     const {
+  //       data: { user },
+  //       error: userError,
+  //     } = await supabase.auth.getUser();
 
-    if (userError || !user) {
-      setError("User not authenticated");
-      setIsSubmitting(false);
+  //     if (userError || !user) {
+  //       setError("User not authenticated");
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+
+  //     console.log("💾 Saving business name to user metadata");
+
+  //     // Update user metadata
+  //     const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+  //       data: {
+  //         business_name: llcName.trim(),
+  //       },
+  //     });
+
+  //     if (updateError) {
+  //       console.error("❌ Update error:", updateError);
+  //       setError("Failed to save. Please try again.");
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+
+  //     console.log("✅ Business name saved:", updateData);
+
+  //     // Force a complete session refresh
+  //     const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+
+  //     if (refreshError) {
+  //       console.error("⚠️ Refresh error:", refreshError);
+  //     }
+
+  //     console.log("✅ Session refreshed");
+
+  //     // Clear any existing auth state
+  //     localStorage.removeItem('supabase.auth.token');
+
+  //     // Wait longer for the changes to propagate
+  //     await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  //     // Force a complete page reload to the dashboard
+  //     window.location.replace("/dashboard");
+  //   } catch (err) {
+  //     console.error("💥 Error:", err);
+  //     setError("Something went wrong. Please try again.");
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!llcName.trim()) {
+      setError("Please enter your business name");
       return;
     }
 
-    console.log("💾 Saving business name to user metadata");
+    setIsSubmitting(true);
 
-    // Update user metadata
-    const { data: updateData, error: updateError } = await supabase.auth.updateUser({
-      data: {
-        business_name: llcName.trim(),
-      },
-    });
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (updateError) {
-      console.error("❌ Update error:", updateError);
-      setError("Failed to save. Please try again.");
+      if (!user) {
+        setError("User not authenticated");
+        return;
+      }
+
+      // ✅ UPDATE PROFILE TABLE (CORRECT WAY)
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          business_name: llcName.trim(),
+        })
+        .eq("id", user.id);
+
+      if (error) {
+        console.error(error);
+        setError("Failed to save business name");
+        return;
+      }
+
+      // ✅ REDIRECT TO DASHBOARD
+      window.location.replace("/dashboard");
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong");
+    } finally {
       setIsSubmitting(false);
-      return;
     }
-
-    console.log("✅ Business name saved:", updateData);
-
-    // Force a complete session refresh
-    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-
-    if (refreshError) {
-      console.error("⚠️ Refresh error:", refreshError);
-    }
-
-    console.log("✅ Session refreshed");
-
-    // Clear any existing auth state
-    localStorage.removeItem('supabase.auth.token');
-    
-    // Wait longer for the changes to propagate
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Force a complete page reload to the dashboard
-    window.location.replace("/dashboard");
-  } catch (err) {
-    console.error("💥 Error:", err);
-    setError("Something went wrong. Please try again.");
-    setIsSubmitting(false);
-  }
-};
+  };
 
   const benefits = [
     "AI-powered project estimates",

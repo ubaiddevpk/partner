@@ -1,58 +1,42 @@
-import React, { useState } from 'react';
-import Sidebar from './Sidebar';
-import AIChatPanel from '../AIChatPanel';
-import { Search, Bell, Menu, X, LayoutDashboard, Sparkles, FolderOpen, Users, Rss } from 'lucide-react';
-import { supabase } from '../../utils/supabase';
+import React, { useState } from "react";
+import Sidebar from "./Sidebar";
+import AIChatPanel from "../AIChatPanel";
+import {
+  Search,
+  Bell,
+  Menu,
+  X,
+  LayoutDashboard,
+  Sparkles,
+  FolderOpen,
+  Users,
+  Rss,
+} from "lucide-react";
+import { supabase } from "../../utils/supabase";
+import { useAuthProfile } from "../../hooks/useAuth";
 
-const Layout = ({ children, currentPath, user }) => {
+const Layout = ({ children, currentPath }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [notifications] = useState(3);
+  const { user, profile, loading } = useAuthProfile();
 
+  if (loading) return null; // or loader
 
- const handleLogout = async () => {
-  try {
-    console.log("🚪 Logging out...");
-    
-    // Clear user state immediately
-   
-    
-    // Sign out from Supabase
-    const { error } = await supabase.auth.signOut();
-    
-    if (error) {
-      console.error('Logout error:', error);
-    }
-    
-    // Clear all possible auth storage
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    // Clear cookies if any
-    document.cookie.split(";").forEach((c) => {
-      document.cookie = c
-        .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    
-    console.log("✅ Logged out successfully");
-    
-    // Force complete reload to login page
-    window.location.replace('/login');
-  } catch (error) {
-    console.error('Logout error:', error);
-    
-    // Even if there's an error, clear everything and redirect
-    localStorage.clear();
-    sessionStorage.clear();
-    window.location.replace('/login');
+  if (!user) {
+    window.location.replace("/login");
+    return null;
   }
+
+const handleLogout = async () => {
+  await supabase.auth.signOut();
+  window.location.replace("/login");
 };
 
   const handleNavigate = (path) => {
     setIsMobileMenuOpen(false);
-    window.history.pushState({}, '', path);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    window.history.pushState({}, "", path);
+    window.dispatchEvent(new PopStateEvent("popstate"));
   };
 
   const handleOpenChat = () => {
@@ -65,32 +49,35 @@ const Layout = ({ children, currentPath, user }) => {
 
   const getPageTitle = () => {
     const pathMap = {
-      '/dashboard': 'Dashboard',
-      '/ask-ai': 'Ask AI',
-      '/projects': 'Projects',
-      '/clients': 'Clients',
-      '/invoices': 'Invoices',
-      '/feed': 'Feed',
-      '/settings': 'Settings'
+      "/dashboard": "Dashboard",
+      "/ask-ai": "Ask AI",
+      "/projects": "Projects",
+      "/clients": "Clients",
+      "/invoices": "Invoices",
+      "/feed": "Feed",
+      "/settings": "Settings",
     };
-    return pathMap[currentPath] || 'Dashboard';
+    return pathMap[currentPath] || "Dashboard";
   };
 
   const mobileNavItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/projects', icon: FolderOpen, label: 'Projects' },
-    { path: '/ask-ai', icon: Sparkles, label: 'AI' },
-    { path: '/clients', icon: Users, label: 'Clients' },
-    { path: '/feed', icon: Rss, label: 'Feed' },
+    { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/projects", icon: FolderOpen, label: "Projects" },
+    { path: "/ask-ai", icon: Sparkles, label: "AI" },
+    { path: "/clients", icon: Users, label: "Clients" },
+    { path: "/feed", icon: Rss, label: "Feed" },
   ];
 
   return (
     <div className="min-h-screen bg-neutral-50 flex">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar 
+        <Sidebar
           currentPath={currentPath}
-          user={user}
+          user={{
+            name: profile?.full_name,
+            businessName: profile?.business_name,
+          }}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
           onOpenChat={handleOpenChat}
@@ -101,23 +88,20 @@ const Layout = ({ children, currentPath, user }) => {
       {/* AI Chat Panel - Opens next to sidebar */}
       {isChatOpen && (
         <div className="hidden lg:block">
-          <AIChatPanel 
-            user={user}
-            onClose={handleCloseChat}
-          />
+          <AIChatPanel user={user} onClose={handleCloseChat} />
         </div>
       )}
 
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <>
-          <div 
+          <div
             className="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm z-40 lg:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
-          
+
           <div className="fixed inset-y-0 left-0 w-64 z-50 lg:hidden animate-slide-in-right">
-            <Sidebar 
+            <Sidebar
               currentPath={currentPath}
               user={user}
               onNavigate={handleNavigate}
@@ -138,13 +122,21 @@ const Layout = ({ children, currentPath, user }) => {
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors"
               >
-                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {isMobileMenuOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
               </button>
 
               <div>
-                <h1 className="text-xl font-bold text-neutral-900">{getPageTitle()}</h1>
+                <h1 className="text-xl font-bold text-neutral-900">
+                  {getPageTitle()}
+                </h1>
                 {user?.businessName && (
-                  <p className="text-xs text-neutral-500 hidden sm:block">{user.businessName}</p>
+                  <p className="text-xs text-neutral-500 hidden sm:block">
+                    {user.businessName}
+                  </p>
                 )}
               </div>
             </div>
@@ -163,11 +155,11 @@ const Layout = ({ children, currentPath, user }) => {
                 )}
               </button>
 
-              <button 
-                onClick={() => handleNavigate('/settings')}
+              <button
+                onClick={() => handleNavigate("/settings")}
                 className="lg:hidden w-10 h-10 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-soft hover:shadow-medium transition-all"
               >
-                {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
               </button>
             </div>
           </div>
@@ -175,9 +167,7 @@ const Layout = ({ children, currentPath, user }) => {
 
         {/* Page Content */}
         <main className="flex-1 overflow-auto">
-          <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            {children}
-          </div>
+          <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">{children}</div>
         </main>
 
         {/* Mobile Bottom Navigation */}
@@ -189,15 +179,28 @@ const Layout = ({ children, currentPath, user }) => {
               return (
                 <button
                   key={item.path}
-                  onClick={() => item.path === '/ask-ai' ? handleOpenChat() : handleNavigate(item.path)}
+                  onClick={() =>
+                    item.path === "/ask-ai"
+                      ? handleOpenChat()
+                      : handleNavigate(item.path)
+                  }
                   className={`flex flex-col items-center justify-center gap-1 transition-colors relative ${
-                    active 
-                      ? 'text-primary-600' 
-                      : 'text-neutral-500 hover:text-neutral-700'
+                    active
+                      ? "text-primary-600"
+                      : "text-neutral-500 hover:text-neutral-700"
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${active ? 'scale-110' : ''} transition-transform`} strokeWidth={active ? 2.5 : 2} />
-                  <span className={`text-xs font-medium ${active ? 'font-semibold' : ''}`}>
+                  <Icon
+                    className={`w-5 h-5 ${
+                      active ? "scale-110" : ""
+                    } transition-transform`}
+                    strokeWidth={active ? 2.5 : 2}
+                  />
+                  <span
+                    className={`text-xs font-medium ${
+                      active ? "font-semibold" : ""
+                    }`}
+                  >
                     {item.label}
                   </span>
                   {active && (
