@@ -24,9 +24,11 @@ import ClientDetailsPage from "./pages/clients/ClientDetailsPage";
 // Layout - Import at top level
 import Layout from "./components/layout/Layout";
 
-// Create a Layout Wrapper that persists across routes
-const LayoutWrapper = ({ children }) => {
-  return <Layout>{children}</Layout>;
+// Create a wrapper component that stays mounted
+const ProtectedLayout = ({ children }) => {
+  return (
+    <ProtectedRoute element={<Layout>{children}</Layout>} requiresBusiness={false} />
+  );
 };
 
 export default function App() {
@@ -56,74 +58,49 @@ export default function App() {
           }
         />
 
-        {/* Protected Routes - All share SAME Layout instance */}
+        {/* Protected Routes - Wrapped in persistent Layout */}
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute
-              element={
-                <LayoutWrapper>
-                  <DashboardPage />
-                </LayoutWrapper>
-              }
-              requiresBusiness={false}
-            />
+            <ProtectedLayout>
+              <DashboardPage />
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/projects"
           element={
-            <ProtectedRoute
-              element={
-                <LayoutWrapper>
-                  <ProjectsPage />
-                </LayoutWrapper>
-              }
-              requiresBusiness={false}
-            />
+            <ProtectedLayout>
+              <ProjectsPage />
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/projects/:id"
           element={
-            <ProtectedRoute
-              element={
-                <LayoutWrapper>
-                  <ProjectDetailsPage />
-                </LayoutWrapper>
-              }
-              requiresBusiness={false}
-            />
+            <ProtectedLayout>
+              <ProjectDetailsPage />
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/clients"
           element={
-            <ProtectedRoute
-              element={
-                <LayoutWrapper>
-                  <ClientsPage />
-                </LayoutWrapper>
-              }
-              requiresBusiness={false}
-            />
+            <ProtectedLayout>
+              <ClientsPage />
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/clients/:id"
           element={
-            <ProtectedRoute
-              element={
-                <LayoutWrapper>
-                  <ClientDetailsPage />
-                </LayoutWrapper>
-              }
-              requiresBusiness={false}
-            />
+            <ProtectedLayout>
+              <ClientDetailsPage />
+            </ProtectedLayout>
           }
         />
 
@@ -131,56 +108,36 @@ export default function App() {
         <Route
           path="/invoices/create"
           element={
-            <ProtectedRoute
-              element={
-                <LayoutWrapper>
-                  <CreateInvoicePage />
-                </LayoutWrapper>
-              }
-              requiresBusiness={false}
-            />
+            <ProtectedLayout>
+              <CreateInvoicePage />
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/invoices/:id"
           element={
-            <ProtectedRoute
-              element={
-                <LayoutWrapper>
-                  <InvoiceDetailsPage />
-                </LayoutWrapper>
-              }
-              requiresBusiness={false}
-            />
+            <ProtectedLayout>
+              <InvoiceDetailsPage />
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/invoices"
           element={
-            <ProtectedRoute
-              element={
-                <LayoutWrapper>
-                  <InvoicesPage />
-                </LayoutWrapper>
-              }
-              requiresBusiness={false}
-            />
+            <ProtectedLayout>
+              <InvoicesPage />
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/settings"
           element={
-            <ProtectedRoute
-              element={
-                <LayoutWrapper>
-                  <SettingsPage />
-                </LayoutWrapper>
-              }
-              requiresBusiness={false}
-            />
+            <ProtectedLayout>
+              <SettingsPage />
+            </ProtectedLayout>
           }
         />
       </Router>

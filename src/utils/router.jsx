@@ -71,12 +71,24 @@
 // };
 
 
+import React, { useState, useEffect, useMemo, createContext, useContext } from "react";
 
-// src/utils/router.jsx - FIXED VERSION
-import React, { useState, useEffect, useMemo } from "react";
+// Create context for params and navigation
+const RouterContext = createContext({ params: {}, currentPath: '' });
+
+export const useParams = () => {
+  const context = useContext(RouterContext);
+  return context.params || {};
+};
+
+export const useLocation = () => {
+  const context = useContext(RouterContext);
+  return { pathname: context.currentPath };
+};
 
 export const Router = ({ children }) => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [params, setParams] = useState({});
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -87,9 +99,11 @@ export const Router = ({ children }) => {
     return () => window.removeEventListener("popstate", handleLocationChange);
   }, []);
 
-  // OPTIMIZED: Only evaluate routes when path changes
-  const activeRoute = useMemo(() => {
-    for (const child of React.Children.toArray(children)) {
+  // Memoize route matching to prevent unnecessary re-renders
+  const { activeRoute, matchedParams } = useMemo(() => {
+    const routes = React.Children.toArray(children);
+    
+    for (const child of routes) {
       if (!React.isValidElement(child)) continue;
       
       const { path } = child.props;
@@ -98,7 +112,7 @@ export const Router = ({ children }) => {
 
       // Exact match (highest priority)
       if (normalizedCurrent === normalizedPath) {
-        return React.cloneElement(child, { currentPath });
+        return { activeRoute: child, matchedParams: {} };
       }
 
       // Dynamic route support
@@ -107,38 +121,54 @@ export const Router = ({ children }) => {
         const currentParts = normalizedCurrent.split("/").filter(Boolean);
 
         if (pathParts.length === currentParts.length) {
-          const params = {};
+          const routeParams = {};
           const isMatch = pathParts.every((part, index) => {
             if (part.startsWith(":")) {
-              params[part.slice(1)] = currentParts[index];
+              routeParams[part.slice(1)] = currentParts[index];
               return true;
             }
             return part === currentParts[index];
           });
 
           if (isMatch) {
-            return React.cloneElement(child, { currentPath, params });
+            return { activeRoute: child, matchedParams: routeParams };
           }
         }
       }
     }
-    return null;
+    
+    return { activeRoute: null, matchedParams: {} };
   }, [currentPath, children]);
 
-  return activeRoute;
+  // Update params when they change
+  useEffect(() => {
+    setParams(matchedParams);
+  }, [matchedParams]);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    params,
+    currentPath
+  }), [params, currentPath]);
+
+  return (
+    <RouterContext.Provider value={contextValue}>
+      {activeRoute}
+    </RouterContext.Provider>
+  );
 };
 
-export const Route = ({ element, currentPath, params }) => {
-  // Simply render the element with params if provided
-  return params ? React.cloneElement(element, { params }) : element;
+export const Route = ({ element }) => {
+  // Simply render the element - params are available via useParams hook
+  return element;
 };
 
 export const useNavigate = () => {
-  return (to) => {
+  return useMemo(() => (to) => {
     // Prevent navigation to same path
     if (window.location.pathname === to) return;
     
     window.history.pushState({}, "", to);
     window.dispatchEvent(new PopStateEvent("popstate"));
-  };
+  }, []);
 };

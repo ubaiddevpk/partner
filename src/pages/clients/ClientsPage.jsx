@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 import {
   Search,
   Download,
@@ -11,10 +12,15 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "../../utils/router";
+import { supabase } from "../../utils/supabase";
+import { useAuth } from "../../contexts/AuthContext";
 
 const ClientsPage = ({ onClientClick }) => {
   const [showNewClientModal, setShowNewClientModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -23,59 +29,42 @@ const ClientsPage = ({ onClientClick }) => {
     referralSource: "",
     createProject: false,
   });
+  
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // Mock clients data
-  const [clients, setClients] = useState([
-    {
-      id: 1,
-      name: "Caleb Salter",
-      initials: "CS",
-      phone: "(269) 626-5944",
-      address: "123 Rivolake Rd, Three Rivers, MI 49093, USA",
-      email: "caleb@example.com",
-    },
-    {
-      id: 2,
-      name: "Dustin Peckinpaugh",
-      initials: "DP",
-      phone: "(269) 626-5944",
-      address: "55279 Buckhorn Rd, Three Rivers, MI 49093, USA",
-      email: "dustin@example.com",
-    },
-    {
-      id: 3,
-      name: "Greg Brown",
-      initials: "GB",
-      phone: "(517) 896-4082",
-      address: "809 E Webb Dr, DeWitt, MI 48820, USA",
-      email: "greg@example.com",
-    },
-    {
-      id: 4,
-      name: "Heather Deforest",
-      initials: "HD",
-      phone: "(269) 760-7871",
-      address: "No address",
-      email: "heather@example.com",
-    },
-    {
-      id: 5,
-      name: "ikram",
-      initials: "I",
-      phone: "(747) 292-0712",
-      address: "Texas City, TX, USA",
-      email: "ikram@example.com",
-    },
-    {
-      id: 6,
-      name: "Joey Reiff",
-      initials: "JR",
-      phone: "(269) 528-1487",
-      address: "Three Rivers, MI 49093, USA",
-      email: "joey@example.com",
-    },
-  ]);
+  useEffect(() => {
+    const fetchClients = async () => {
+      if (!user) return;
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .eq("profile_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching clients:", error);
+        setLoading(false);
+        return;
+      }
+
+      setClients(
+        data.map((client) => ({
+          ...client,
+          initials: client.name
+            .split(" ")
+            .map((w) => w.charAt(0))
+            .join("")
+            .toUpperCase()
+            .slice(0, 2),
+        }))
+      );
+      setLoading(false);
+    };
+
+    fetchClients();
+  }, [user]);
 
   const referralSources = [
     "Google Search",
@@ -95,10 +84,9 @@ const ClientsPage = ({ onClientClick }) => {
     }));
   };
 
-  const handleCreateClient = () => {
+  const handleCreateClient = async () => {
     if (!formData.name.trim()) return;
 
-    // Create initials from name
     const initials = formData.name
       .split(" ")
       .map((word) => word.charAt(0))
@@ -107,15 +95,32 @@ const ClientsPage = ({ onClientClick }) => {
       .slice(0, 2);
 
     const newClient = {
-      id: clients.length + 1,
+      profile_id: user.id,
       name: formData.name,
-      initials: initials || "NC",
-      phone: formData.phone,
-      address: formData.address || "No address",
       email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      referral_source: formData.referralSource,
+      create_project: formData.createProject,
     };
 
-    setClients((prev) => [newClient, ...prev]);
+    // Insert into Supabase and return the inserted row
+    const { data, error } = await supabase
+      .from("clients")
+      .insert([newClient])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating client:", error);
+      return;
+    }
+
+    // Add to frontend state with initials
+    setClients((prev) => [
+      { ...data, initials: initials || "NC" },
+      ...prev,
+    ]);
 
     // Reset form
     setFormData({
@@ -133,8 +138,8 @@ const ClientsPage = ({ onClientClick }) => {
   const filteredClients = clients.filter(
     (client) =>
       client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.phone.includes(searchQuery) ||
-      client.address.toLowerCase().includes(searchQuery.toLowerCase())
+      (client.phone && client.phone.includes(searchQuery)) ||
+      (client.address && client.address.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const getRandomColor = (index) => {
@@ -184,52 +189,62 @@ const ClientsPage = ({ onClientClick }) => {
 
       {/* Clients List */}
       <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
-        <div className="divide-y divide-neutral-200">
-          {filteredClients.map((client, index) => (
-            <div
-              key={client.id}
-             onClick={() => navigate(`/clients/${client.id}`)}
-              className="p-6 hover:bg-neutral-50 transition-colors cursor-pointer group"
-            >
-              <div className="flex items-center gap-4">
-                {/* Avatar */}
-                <div
-                  className={`w-12 h-12 bg-gradient-to-br ${getRandomColor(
-                    index
-                  )} rounded-full flex items-center justify-center text-white font-bold shadow-soft flex-shrink-0`}
-                >
-                  {client.initials}
-                </div>
+        {loading ? (
+          <div className="p-12 text-center">
+            <p className="text-neutral-600">Loading clients...</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-neutral-200">
+            {filteredClients.map((client, index) => (
+              <div
+                key={client.id}
+                onClick={() => navigate(`/clients/${client.id}`)}
+                className="p-6 hover:bg-neutral-50 transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Avatar */}
+                  <div
+                    className={`w-12 h-12 bg-gradient-to-br ${getRandomColor(
+                      index
+                    )} rounded-full flex items-center justify-center text-white font-bold shadow-soft flex-shrink-0`}
+                  >
+                    {client.initials}
+                  </div>
 
-                {/* Client Info */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-neutral-900 mb-2 group-hover:text-primary-600 transition-colors">
-                    {client.name}
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600">
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      <span>{client.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span className="truncate max-w-xs">
-                        {client.address}
-                      </span>
+                  {/* Client Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-neutral-900 mb-2 group-hover:text-primary-600 transition-colors">
+                      {client.name}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600">
+                      {client.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4" />
+                          <span>{client.phone}</span>
+                        </div>
+                      )}
+                      {client.address && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          <span className="truncate max-w-xs">
+                            {client.address}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
+
+                  {/* Actions */}
+                  <button className="w-8 h-8 flex items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors opacity-0 group-hover:opacity-100">
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
                 </div>
-
-                {/* Actions */}
-                <button className="w-8 h-8 flex items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors opacity-0 group-hover:opacity-100">
-                  <MoreVertical className="w-4 h-4" />
-                </button>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {filteredClients.length === 0 && (
+        {!loading && filteredClients.length === 0 && (
           <div className="p-12 text-center">
             <div className="w-16 h-16 bg-neutral-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-neutral-400" />

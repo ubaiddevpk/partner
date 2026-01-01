@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from '../../utils/router';  // ✅ Use custom router
+import { supabase } from '../../utils/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import { 
   ArrowLeft, 
   Mail, 
@@ -13,20 +16,15 @@ import {
   Info
 } from 'lucide-react';
 
-import { useNavigate } from '../../utils/router';
-
-const ClientDetailsPage = ({ params }) => {  // Change this line
+const ClientDetailsPage = () => {
+  const { id } = useParams();  // ✅ Now works with custom router
   const navigate = useNavigate();
-  
-  // Add mock client data at the top
-  const client = {
-    id: params?.id || '1',
-    name: 'Sample Client',
-    phone: '(269) 626-5944',
-    email: 'client@example.com',
-    address: '123 Main St, City, State 12345'
-  };
-   const handleBack = () => {
+  const [client, setClient] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { user } = useAuth();
+
+  const handleBack = () => {
     navigate('/clients');
   };
 
@@ -55,6 +53,103 @@ const ClientDetailsPage = ({ params }) => {  // Change this line
       statusColor: 'bg-secondary-500'
     }
   ];
+
+  useEffect(() => {
+    const fetchClient = async () => {
+      // Check if we have user and id
+      if (!user) {
+        console.log('No user yet, waiting...');
+        return;
+      }
+      
+      if (!id) {
+        console.log('No ID in params');
+        setError('No client ID provided');
+        setLoading(false);
+        return;
+      }
+
+      console.log('Fetching client with ID:', id, 'for user:', user.id);
+      setLoading(true);
+      setError(null);
+
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('clients')
+          .select('*')
+          .eq('id', id)
+          .eq('profile_id', user.id)
+          .single();
+
+        console.log('Supabase response:', { data, error: fetchError });
+
+        if (fetchError) {
+          console.error('Error fetching client:', fetchError);
+          setError(fetchError.message);
+          setLoading(false);
+          return;
+        }
+
+        if (!data) {
+          console.log('No client found');
+          setError('Client not found');
+          setLoading(false);
+          return;
+        }
+
+        console.log('Client loaded successfully:', data);
+        setClient(data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        setError('An unexpected error occurred');
+        setLoading(false);
+      }
+    };
+
+    fetchClient();
+  }, [user, id]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-neutral-500">Loading client details...</p>
+        <p className="text-xs text-neutral-400 mt-2">User: {user?.id || 'No user'}</p>
+        <p className="text-xs text-neutral-400">Client ID: {id || 'No ID'}</p>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-red-600 font-medium">Error: {error}</p>
+        <button
+          onClick={handleBack}
+          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+        >
+          Back to Clients
+        </button>
+      </div>
+    );
+  }
+
+  // Show not found state
+  if (!client) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-neutral-600 font-medium">Client not found</p>
+        <button
+          onClick={handleBack}
+          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+        >
+          Back to Clients
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-20 lg:pb-6">
@@ -114,7 +209,7 @@ const ClientDetailsPage = ({ params }) => {  // Change this line
               <div className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-neutral-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-neutral-900">{client.phone}</p>
+                  <p className="text-neutral-900">{client.phone || 'No phone'}</p>
                 </div>
               </div>
 
@@ -122,7 +217,7 @@ const ClientDetailsPage = ({ params }) => {  // Change this line
               <div className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-neutral-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-neutral-900">{client.email}</p>
+                  <p className="text-neutral-900">{client.email || 'No email'}</p>
                 </div>
               </div>
 
@@ -130,7 +225,7 @@ const ClientDetailsPage = ({ params }) => {  // Change this line
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-neutral-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-neutral-900">{client.address}</p>
+                  <p className="text-neutral-900">{client.address || 'No address'}</p>
                 </div>
               </div>
 
@@ -138,7 +233,9 @@ const ClientDetailsPage = ({ params }) => {  // Change this line
               <div className="flex items-start gap-3">
                 <Users className="w-5 h-5 text-neutral-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-neutral-500">No referral source</p>
+                  <p className="text-neutral-500">
+                    {client.referral_source || 'No referral source'}
+                  </p>
                 </div>
               </div>
 
