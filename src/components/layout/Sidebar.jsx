@@ -69,18 +69,17 @@ const Sidebar = ({
     },
   ];
 
-  const handleItemClick = (item) => {
-    if (item.action === "chat") {
-      onOpenChat?.();
-    } else if (item.path) {
-      if (onNavigate) {
-        onNavigate(item.path);
-      } else {
-        window.history.pushState({}, "", item.path);
-        window.dispatchEvent(new PopStateEvent("popstate"));
-      }
-    }
-  };
+ const handleItemClick = (item) => {
+  if (item.action === "chat") {
+    onOpenChat?.();
+    return;
+  }
+
+  if (item.path && onNavigate) {
+    onNavigate(item.path); // ✅ SPA navigation
+  }
+};
+
 
   const isActive = (item) => {
     if (item.action === "chat") return false;

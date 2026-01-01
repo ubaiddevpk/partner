@@ -22,16 +22,16 @@ import ProjectDetailsPage from "./pages/projects/ProjectDetailsPage";
 import ClientDetailsPage from "./pages/clients/ClientDetailsPage";
 import CreateEstimatePage from "./pages/projects/CreateEstimatePage";
 
-
-
-
 // Layout - Import at top level
 import Layout from "./components/layout/Layout";
 
 // Create a wrapper component that stays mounted
 const ProtectedLayout = ({ children }) => {
   return (
-    <ProtectedRoute element={<Layout>{children}</Layout>} requiresBusiness={false} />
+    <ProtectedRoute
+      element={<Layout>{children}</Layout>}
+      requiresBusiness={false}
+    />
   );
 };
 
@@ -90,15 +90,14 @@ export default function App() {
           }
         />
 
-
         <Route
-  path="/projects/:id/estimates/create"
-  element={
-    <ProtectedLayout>
-      <CreateEstimatePage />
-    </ProtectedLayout>
-  }
-/>
+          path="/projects/:id/estimates/create"
+          element={
+            <ProtectedLayout>
+              <CreateEstimatePage />
+            </ProtectedLayout>
+          }
+        />
 
         <Route
           path="/clients"

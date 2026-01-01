@@ -237,15 +237,18 @@ import {
 } from "lucide-react";
 import { supabase } from "../../utils/supabase";
 import { useAuthProfile } from "../../hooks/useAuth";
+import { useNavigate, useLocation } from "../../utils/router";
 
 const Layout = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [notifications] = useState(3);
   const { user, profile, loading } = useAuthProfile();
+   const { pathname: currentPath } = useLocation();
+    const navigate = useNavigate();
 
   // Get current path from URL
-  const currentPath = window.location.pathname;
+  // const currentPath = window.location.pathname;
 
   // Memoize page title to prevent recalculation
   const pageTitle = useMemo(() => {
@@ -275,8 +278,7 @@ const Layout = ({ children }) => {
 
   const handleNavigate = (path) => {
     setIsMobileMenuOpen(false);
-    window.history.pushState({}, "", path);
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    navigate(path);
   };
 
   const handleOpenChat = () => {
