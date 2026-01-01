@@ -55,7 +55,7 @@ const DashboardPage = ({ user, onNavigateToProjects }) => {
   ];
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-6">
+   <div className="space-y-6 pb-20 lg:pb-6 max-w-full overflow-x-hidden">
       {/* Welcome Header */}
       <div className="bg-gradient-to-br from-primary-50 via-white to-secondary-50 rounded-2xl p-6 sm:p-8 border border-primary-100 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-200 rounded-full opacity-10 blur-3xl"></div>
@@ -70,7 +70,7 @@ const DashboardPage = ({ user, onNavigateToProjects }) => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-full">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (

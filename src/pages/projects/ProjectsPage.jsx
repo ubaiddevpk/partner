@@ -89,13 +89,13 @@ const handleProjectClick = (project) => {
   });
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="max-w-5xl space-y-6 w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-neutral-900">Projects</h1>
         <div className="flex items-center gap-3">
           {/* Search */}
-          <div className="relative">
+          <div className="relative max-w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input
               type="text"
