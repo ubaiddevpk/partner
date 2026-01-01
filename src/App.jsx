@@ -74,7 +74,7 @@ export default function App() {
                   <ProjectsPage />
                 </Layout>
               }
-              requiresBusiness={true}
+              requiresBusiness={false}
             />
           }
         />
@@ -89,7 +89,7 @@ export default function App() {
                   <ProjectDetailsPage />
                 </Layout>
               }
-              requiresBusiness={true}
+              requiresBusiness={false}
             />
           }
         />
@@ -103,7 +103,7 @@ export default function App() {
                   <ClientsPage />
                 </Layout>
               }
-              requiresBusiness={true}
+              requiresBusiness={false}
             />
           }
         />
@@ -118,7 +118,7 @@ export default function App() {
                   <ClientDetailsPage />
                 </Layout>
               }
-              requiresBusiness={true}
+              requiresBusiness={false}
             />
           }
         />
@@ -135,7 +135,7 @@ export default function App() {
                   <CreateInvoicePage />
                 </Layout>
               }
-              requiresBusiness={true}
+              requiresBusiness={false}
             />
           }
         />
@@ -150,7 +150,7 @@ export default function App() {
                   <InvoiceDetailsPage />
                 </Layout>
               }
-              requiresBusiness={true}
+              requiresBusiness={false}
             />
           }
         />
@@ -165,7 +165,7 @@ export default function App() {
                   <InvoicesPage />
                 </Layout>
               }
-              requiresBusiness={true}
+              requiresBusiness={false}
             />
           }
         />
@@ -179,7 +179,7 @@ export default function App() {
                   <SettingsPage />
                 </Layout>
               }
-              requiresBusiness={true}
+              requiresBusiness={false}
             />
           }
         />

@@ -27,15 +27,16 @@ export function useAuthProfile() {
         .single();
 
       if (!existingProfile) {
-        const { data: newProfile } = await supabase
-          .from("profiles")
-          .insert({
-            id: user.id,
-            full_name: user.user_metadata?.full_name || "",
-            business_name: "Business Name"
-          })
-          .select()
-          .single();
+      const { data: newProfile } = await supabase
+  .from("profiles")
+  .upsert({
+    id: user.id,
+    full_name: user.user_metadata?.full_name || null,
+    business_name: user.user_metadata?.business_name || null,
+  })
+  .select()
+  .single();
+
 
         setProfile(newProfile);
       } else {
