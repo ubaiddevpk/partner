@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileText } from 'lucide-react';
 
-const ProjectEstimates = ({ project }) => {
+const ProjectEstimates = ({ project,onClick }) => {
   return (
     <div className="bg-white rounded-2xl border border-neutral-200 p-12">
       {/* Header */}
@@ -21,7 +21,9 @@ const ProjectEstimates = ({ project }) => {
           Quickly create detailed, professional proposals and impress your customers with speed and accuracy.
         </p>
         
-        <button className="px-8 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold rounded-xl transition-all hover:shadow-soft text-lg">
+        <button className="px-8 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold rounded-xl transition-all hover:shadow-soft text-lg"
+        onClick={onClick}>
+
           Create estimate
         </button>
       </div>

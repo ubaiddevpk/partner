@@ -5,8 +5,13 @@ import {
   Clock,
   MessageSquare,
   Sparkles,
-  UserX
+  UserX,
+  ChevronDown,
+  Edit2,
+  Check,
+  X
 } from 'lucide-react';
+import { useParams, useNavigate } from '../../utils/router';
 
 // Import tab components
 import ProjectOverview from '../../components/project/ProjectOverview';
@@ -15,19 +20,46 @@ import ProjectInvoices from '../../components/project/ProjectInvoices';
 import ProjectDocuments from '../../components/project/ProjectDocuments';
 import ProjectFiles from '../../components/project/ProjectFiles';
 
-
-const ProjectDetailsPage = ({ params }) => {
-  const { id } = params || {};
+const ProjectDetailsPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
-  const project = {
-  id,
-  name: "Untitled project"
-};
+  const [projectName, setProjectName] = useState('Untitled project');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState('');
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
 
-const handleBack = () => {
-  window.history.pushState({}, "", "/projects");
-  window.dispatchEvent(new PopStateEvent("popstate"));
-};
+  const project = {
+    id,
+    name: projectName
+  };
+
+  const handleBack = () => {
+    navigate('/projects');
+  };
+
+  const handleEditName = () => {
+    setTempName(projectName);
+    setIsEditingName(true);
+  };
+
+  const handleSaveName = () => {
+    if (tempName.trim()) {
+      setProjectName(tempName.trim());
+    }
+    setIsEditingName(false);
+  };
+
+  const handleCancelEdit = () => {
+    setTempName('');
+    setIsEditingName(false);
+  };
+
+  const handleCreateEstimate = () => {
+    setShowCreateMenu(false);
+    // Navigate to create estimate page with project info
+    navigate(`/projects/${id}/estimates/create?projectName=${encodeURIComponent(projectName)}`);
+  };
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -40,9 +72,9 @@ const handleBack = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <ProjectOverview project={project} />;
+        return <ProjectOverview project={project} onClick={handleCreateEstimate}/>;
       case 'estimates':
-        return <ProjectEstimates project={project} />;
+        return <ProjectEstimates project={project} onClick={handleCreateEstimate} />;
       case 'invoices':
         return <ProjectInvoices project={project} />;
       case 'documents':
@@ -76,7 +108,45 @@ const handleBack = () => {
                 No teammate
               </span>
             </div>
-            <h1 className="text-3xl font-bold text-neutral-900">{project?.name || 'Untitled project'}</h1>
+            
+            {/* Editable Project Name */}
+            {isEditingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveName();
+                    if (e.key === 'Escape') handleCancelEdit();
+                  }}
+                  className="text-3xl font-bold text-neutral-900 border-2 border-primary-500 rounded-lg px-3 py-1 focus:outline-none"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveName}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors"
+                >
+                  <Check className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-neutral-200 text-neutral-600 hover:bg-neutral-300 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 group">
+                <h1 className="text-3xl font-bold text-neutral-900">{projectName}</h1>
+                <button
+                  onClick={handleEditName}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -84,15 +154,58 @@ const handleBack = () => {
           <button className="px-4 py-2 bg-white border-2 border-neutral-200 text-neutral-700 font-semibold rounded-xl hover:border-neutral-300 transition-all">
             <MoreVertical className="w-5 h-5" />
           </button>
-          <button className="px-6 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl shadow-primary hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            Create ▼
-          </button>
+          
+          {/* Create Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCreateMenu(!showCreateMenu)}
+              className="px-6 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl shadow-primary hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
+            >
+              Create
+              <ChevronDown className="w-4 h-4" />
+            </button>
+
+            {/* Dropdown Menu */}
+            {showCreateMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowCreateMenu(false)}
+                />
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-neutral-200 py-2 z-20">
+                  <button
+                    onClick={handleCreateEstimate}
+                    className="w-full px-4 py-2 text-left text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  >
+                    Estimate
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCreateMenu(false);
+                      navigate(`/projects/${id}/invoices/create`);
+                    }}
+                    className="w-full px-4 py-2 text-left text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  >
+                    Invoice
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCreateMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  >
+                    Document
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Project ID */}
       <div className="text-sm text-neutral-600">
-        {project?.id || 'PRJ-10052'}
+        {id || 'PRJ-10052'}
       </div>
 
       {/* Tabs + Activity/Comments */}

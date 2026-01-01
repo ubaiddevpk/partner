@@ -20,6 +20,10 @@ import CreateInvoicePage from "./pages/invoices/CreateInvoicePage";
 import InvoiceDetailsPage from "./pages/invoices/InvoiceDetailsPage";
 import ProjectDetailsPage from "./pages/projects/ProjectDetailsPage";
 import ClientDetailsPage from "./pages/clients/ClientDetailsPage";
+import CreateEstimatePage from "./pages/projects/CreateEstimatePage";
+
+
+
 
 // Layout - Import at top level
 import Layout from "./components/layout/Layout";
@@ -85,6 +89,16 @@ export default function App() {
             </ProtectedLayout>
           }
         />
+
+
+        <Route
+  path="/projects/:id/estimates/create"
+  element={
+    <ProtectedLayout>
+      <CreateEstimatePage />
+    </ProtectedLayout>
+  }
+/>
 
         <Route
           path="/clients"

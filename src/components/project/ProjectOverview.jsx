@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileText, DollarSign, Users } from 'lucide-react';
 
-const ProjectOverview = ({ project }) => {
+const ProjectOverview = ({ project,onClick }) => {
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       {/* Client Details Card */}
@@ -43,7 +43,8 @@ const ProjectOverview = ({ project }) => {
             Quickly create detailed, professional proposals and impress your customers with speed and accuracy.
           </p>
           
-          <button className="px-6 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold rounded-xl transition-colors">
+          <button className="px-6 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold rounded-xl transition-colors"
+          onClick={onClick}>
             Create Estimate
           </button>
         </div>
