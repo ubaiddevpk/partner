@@ -1,3 +1,4 @@
+// src/App.jsx - OPTIMIZED VERSION
 import React from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Router, Route } from "./utils/router";
@@ -15,19 +16,24 @@ import ProjectsPage from "./pages/projects/ProjectsPage";
 import ClientsPage from "./pages/clients/ClientsPage";
 import InvoicesPage from "./pages/invoices/InvoicesPage";
 import SettingsPage from "./pages/settings/SettingsPage";
-import CreateInvoicePage from "./pages/invoices/CreateInvoicePage"; // Fixed typo
-import InvoiceDetailsPage from "./pages/invoices/InvoiceDetailsPage"; // Fixed typo
-import ProjectDetailsPage from "./pages/projects/ProjectDetailsPage"; // Fixed typo
-import ClientDetailsPage from "./pages/clients/ClientDetailsPage"; // Fixed typo
+import CreateInvoicePage from "./pages/invoices/CreateInvoicePage";
+import InvoiceDetailsPage from "./pages/invoices/InvoiceDetailsPage";
+import ProjectDetailsPage from "./pages/projects/ProjectDetailsPage";
+import ClientDetailsPage from "./pages/clients/ClientDetailsPage";
 
-// Layout
+// Layout - Import at top level
 import Layout from "./components/layout/Layout";
+
+// Create a Layout Wrapper that persists across routes
+const LayoutWrapper = ({ children }) => {
+  return <Layout>{children}</Layout>;
+};
 
 export default function App() {
   return (
     <AuthProvider>
       <Router>
-        {/* Public Routes */}
+        {/* Public Routes - No Layout */}
         <Route path="/" element={<PublicRoute element={<LandingPage />} />} />
         <Route
           path="/signup"
@@ -39,7 +45,7 @@ export default function App() {
         />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
-        {/* Onboarding - Requires auth but not business */}
+        {/* Onboarding - No Layout */}
         <Route
           path="/onboarding"
           element={
@@ -50,15 +56,15 @@ export default function App() {
           }
         />
 
-        {/* Protected Routes - Require auth AND business */}
+        {/* Protected Routes - All share SAME Layout instance */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute
               element={
-                <Layout>
+                <LayoutWrapper>
                   <DashboardPage />
-                </Layout>
+                </LayoutWrapper>
               }
               requiresBusiness={false}
             />
@@ -70,24 +76,23 @@ export default function App() {
           element={
             <ProtectedRoute
               element={
-                <Layout>
+                <LayoutWrapper>
                   <ProjectsPage />
-                </Layout>
+                </LayoutWrapper>
               }
               requiresBusiness={false}
             />
           }
         />
 
-        {/* Add this - Project Details */}
         <Route
           path="/projects/:id"
           element={
             <ProtectedRoute
               element={
-                <Layout>
+                <LayoutWrapper>
                   <ProjectDetailsPage />
-                </Layout>
+                </LayoutWrapper>
               }
               requiresBusiness={false}
             />
@@ -99,71 +104,66 @@ export default function App() {
           element={
             <ProtectedRoute
               element={
-                <Layout>
+                <LayoutWrapper>
                   <ClientsPage />
-                </Layout>
+                </LayoutWrapper>
               }
               requiresBusiness={false}
             />
           }
         />
 
-        {/* Add this - Client Details */}
         <Route
           path="/clients/:id"
           element={
             <ProtectedRoute
               element={
-                <Layout>
+                <LayoutWrapper>
                   <ClientDetailsPage />
-                </Layout>
+                </LayoutWrapper>
               }
               requiresBusiness={false}
             />
           }
         />
 
-        {/* Invoice Routes - ORDER IS CRITICAL */}
-
-        {/* 1. Most specific first - /invoices/create */}
+        {/* Invoice Routes */}
         <Route
           path="/invoices/create"
           element={
             <ProtectedRoute
               element={
-                <Layout>
+                <LayoutWrapper>
                   <CreateInvoicePage />
-                </Layout>
+                </LayoutWrapper>
               }
               requiresBusiness={false}
             />
           }
         />
 
-        {/* 2. Dynamic route second - /invoices/:id */}
         <Route
           path="/invoices/:id"
           element={
             <ProtectedRoute
               element={
-                <Layout>
+                <LayoutWrapper>
                   <InvoiceDetailsPage />
-                </Layout>
+                </LayoutWrapper>
               }
               requiresBusiness={false}
             />
           }
         />
 
-        {/* 3. List page last - /invoices */}
         <Route
           path="/invoices"
           element={
             <ProtectedRoute
               element={
-                <Layout>
+                <LayoutWrapper>
                   <InvoicesPage />
-                </Layout>
+                </LayoutWrapper>
               }
               requiresBusiness={false}
             />
@@ -175,9 +175,9 @@ export default function App() {
           element={
             <ProtectedRoute
               element={
-                <Layout>
+                <LayoutWrapper>
                   <SettingsPage />
-                </Layout>
+                </LayoutWrapper>
               }
               requiresBusiness={false}
             />
