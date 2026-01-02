@@ -1,6 +1,7 @@
-// src/App.jsx - OPTIMIZED VERSION
+// src/App.jsx - OPTIMIZED VERSION WITH CHAT CONTEXT
 import React from "react";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ChatProvider } from "./contexts/ChatContext";
 import { Router, Route } from "./utils/router";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 import { PublicRoute } from "./components/shared/PublicRoute";
@@ -38,122 +39,124 @@ const ProtectedLayout = ({ children }) => {
 export default function App() {
   return (
     <AuthProvider>
-      <Router>
-        {/* Public Routes - No Layout */}
-        <Route path="/" element={<PublicRoute element={<LandingPage />} />} />
-        <Route
-          path="/signup"
-          element={<PublicRoute element={<PartnerSignupPage />} />}
-        />
-        <Route
-          path="/login"
-          element={<PublicRoute element={<PartnerLoginPage />} />}
-        />
-        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <ChatProvider>
+        <Router>
+          {/* Public Routes - No Layout */}
+          <Route path="/" element={<PublicRoute element={<LandingPage />} />} />
+          <Route
+            path="/signup"
+            element={<PublicRoute element={<PartnerSignupPage />} />}
+          />
+          <Route
+            path="/login"
+            element={<PublicRoute element={<PartnerLoginPage />} />}
+          />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
-        {/* Onboarding - No Layout */}
-        <Route
-          path="/onboarding"
-          element={
-            <ProtectedRoute
-              element={<OnboardingPage />}
-              requiresBusiness={false}
-            />
-          }
-        />
+          {/* Onboarding - No Layout */}
+          <Route
+            path="/onboarding"
+            element={
+              <ProtectedRoute
+                element={<OnboardingPage />}
+                requiresBusiness={false}
+              />
+            }
+          />
 
-        {/* Protected Routes - Wrapped in persistent Layout */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedLayout>
-              <DashboardPage />
-            </ProtectedLayout>
-          }
-        />
+          {/* Protected Routes - Wrapped in persistent Layout */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedLayout>
+                <DashboardPage />
+              </ProtectedLayout>
+            }
+          />
 
-        <Route
-          path="/projects"
-          element={
-            <ProtectedLayout>
-              <ProjectsPage />
-            </ProtectedLayout>
-          }
-        />
+          <Route
+            path="/projects"
+            element={
+              <ProtectedLayout>
+                <ProjectsPage />
+              </ProtectedLayout>
+            }
+          />
 
-        <Route
-          path="/projects/:id"
-          element={
-            <ProtectedLayout>
-              <ProjectDetailsPage />
-            </ProtectedLayout>
-          }
-        />
+          <Route
+            path="/projects/:id"
+            element={
+              <ProtectedLayout>
+                <ProjectDetailsPage />
+              </ProtectedLayout>
+            }
+          />
 
-        <Route
-          path="/projects/:id/estimates/create"
-          element={
-            <ProtectedLayout>
-              <CreateEstimatePage />
-            </ProtectedLayout>
-          }
-        />
+          <Route
+            path="/projects/:id/estimates/create"
+            element={
+              <ProtectedLayout>
+                <CreateEstimatePage />
+              </ProtectedLayout>
+            }
+          />
 
-        <Route
-          path="/clients"
-          element={
-            <ProtectedLayout>
-              <ClientsPage />
-            </ProtectedLayout>
-          }
-        />
+          <Route
+            path="/clients"
+            element={
+              <ProtectedLayout>
+                <ClientsPage />
+              </ProtectedLayout>
+            }
+          />
 
-        <Route
-          path="/clients/:id"
-          element={
-            <ProtectedLayout>
-              <ClientDetailsPage />
-            </ProtectedLayout>
-          }
-        />
+          <Route
+            path="/clients/:id"
+            element={
+              <ProtectedLayout>
+                <ClientDetailsPage />
+              </ProtectedLayout>
+            }
+          />
 
-        {/* Invoice Routes */}
-        <Route
-          path="/invoices/create"
-          element={
-            <ProtectedLayout>
-              <CreateInvoicePage />
-            </ProtectedLayout>
-          }
-        />
+          {/* Invoice Routes */}
+          <Route
+            path="/invoices/create"
+            element={
+              <ProtectedLayout>
+                <CreateInvoicePage />
+              </ProtectedLayout>
+            }
+          />
 
-        <Route
-          path="/invoices/:id"
-          element={
-            <ProtectedLayout>
-              <InvoiceDetailsPage />
-            </ProtectedLayout>
-          }
-        />
+          <Route
+            path="/invoices/:id"
+            element={
+              <ProtectedLayout>
+                <InvoiceDetailsPage />
+              </ProtectedLayout>
+            }
+          />
 
-        <Route
-          path="/invoices"
-          element={
-            <ProtectedLayout>
-              <InvoicesPage />
-            </ProtectedLayout>
-          }
-        />
+          <Route
+            path="/invoices"
+            element={
+              <ProtectedLayout>
+                <InvoicesPage />
+              </ProtectedLayout>
+            }
+          />
 
-        <Route
-          path="/settings"
-          element={
-            <ProtectedLayout>
-              <SettingsPage />
-            </ProtectedLayout>
-          }
-        />
-      </Router>
+          <Route
+            path="/settings"
+            element={
+              <ProtectedLayout>
+                <SettingsPage />
+              </ProtectedLayout>
+            }
+          />
+        </Router>
+      </ChatProvider>
     </AuthProvider>
   );
 }
